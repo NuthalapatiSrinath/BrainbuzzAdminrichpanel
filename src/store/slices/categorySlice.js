@@ -18,6 +18,20 @@ export const fetchCategories = createAsyncThunk(
   },
 );
 
+export const fetchCategoryById = createAsyncThunk(
+  "category/fetchById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await categoryService.getById(id);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch category",
+      );
+    }
+  },
+);
+
 export const createCategory = createAsyncThunk(
   "category/create",
   async (formData, { rejectWithValue }) => {
@@ -63,10 +77,15 @@ const categorySlice = createSlice({
   initialState: {
     categories: [], // Changed from 'items' to 'categories' to match your component logic if needed, or keep 'items'
     items: [], // Keeping 'items' based on your previous code
+    selectedCategory: null,
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearSelectedCategory: (state) => {
+      state.selectedCategory = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch
@@ -80,6 +99,20 @@ const categorySlice = createSlice({
         state.items = action.payload;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Fetch by ID
+      .addCase(fetchCategoryById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCategoryById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedCategory = action.payload;
+      })
+      .addCase(fetchCategoryById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -112,4 +145,5 @@ const categorySlice = createSlice({
   },
 });
 
+export const { clearSelectedCategory } = categorySlice.actions;
 export default categorySlice.reducer;

@@ -17,6 +17,20 @@ export const fetchSubCategories = createAsyncThunk(
   },
 );
 
+export const fetchSubCategoryById = createAsyncThunk(
+  "subCategory/fetchById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await subCategoryService.getById(id);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch subcategory",
+      );
+    }
+  },
+);
+
 export const createSubCategory = createAsyncThunk(
   "subCategory/create",
   async (formData, { rejectWithValue }) => {
@@ -62,10 +76,15 @@ const subCategorySlice = createSlice({
   initialState: {
     subCategories: [], // Matched to component usage
     items: [],
+    selectedSubCategory: null,
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearSelectedSubCategory: (state) => {
+      state.selectedSubCategory = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch
@@ -79,6 +98,20 @@ const subCategorySlice = createSlice({
         state.items = action.payload;
       })
       .addCase(fetchSubCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Fetch by ID
+      .addCase(fetchSubCategoryById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSubCategoryById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedSubCategory = action.payload;
+      })
+      .addCase(fetchSubCategoryById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -111,4 +144,5 @@ const subCategorySlice = createSlice({
   },
 });
 
+export const { clearSelectedSubCategory } = subCategorySlice.actions;
 export default subCategorySlice.reducer;

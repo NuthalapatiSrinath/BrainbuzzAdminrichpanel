@@ -119,8 +119,6 @@ const SeriesDashboard = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Prepare form data logic (JSON or FormData based on your backend preference from prev files)
-      // Assuming JSON for simplicity here, but if file upload needed, switch to FormData
       const payload = new FormData();
       Object.keys(formData).forEach((key) => {
         if (key.includes("Ids"))
@@ -187,7 +185,7 @@ const SeriesDashboard = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Hero Header */}
         <motion.div
@@ -277,7 +275,8 @@ const SeriesDashboard = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-xl border-2 border-indigo-100 p-8"
+            // 🔥 FIXED: Added dark mode classes for container
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-indigo-100 dark:border-indigo-900/50 p-8"
           >
             <form onSubmit={handleSaveSeries} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -287,7 +286,7 @@ const SeriesDashboard = () => {
                   transition={{ delay: 0.1 }}
                   className="space-y-6"
                 >
-                  <div className="flex items-center gap-3 pb-3 border-b-2 border-indigo-200">
+                  <div className="flex items-center gap-3 pb-3 border-b-2 border-indigo-200 dark:border-indigo-800">
                     <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg">
                       <FileText className="w-5 h-5 text-white" />
                     </div>
@@ -296,12 +295,12 @@ const SeriesDashboard = () => {
                     </h3>
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                       <BookOpen className="w-4 h-4 text-purple-600" />
                       📚 Series Name
                     </label>
                     <input
-                      className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-100 text-sm font-medium transition-all"
+                      className="w-full px-4 py-3 bg-white dark:bg-gray-900 border-2 border-purple-200 dark:border-purple-900/50 rounded-xl outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 text-slate-700 dark:text-slate-200 font-medium transition-all"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -311,12 +310,12 @@ const SeriesDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                       <FileText className="w-4 h-4 text-indigo-600" />
                       📄 Description
                     </label>
                     <textarea
-                      className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 text-sm font-medium transition-all resize-none"
+                      className="w-full px-4 py-3 bg-white dark:bg-gray-900 border-2 border-indigo-200 dark:border-indigo-900/50 rounded-xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-slate-700 dark:text-slate-200 font-medium transition-all resize-none"
                       rows="4"
                       value={formData.description}
                       onChange={(e) =>
@@ -330,13 +329,13 @@ const SeriesDashboard = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         <Trophy className="w-4 h-4 text-blue-600" />
                         🏆 No. Tests
                       </label>
                       <input
                         type="number"
-                        className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-sm font-medium transition-all"
+                        className="w-full px-4 py-3 bg-white dark:bg-gray-900 border-2 border-blue-200 dark:border-blue-900/50 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-slate-700 dark:text-slate-200 font-medium transition-all"
                         value={formData.noOfTests}
                         onChange={(e) =>
                           setFormData({
@@ -348,13 +347,13 @@ const SeriesDashboard = () => {
                       />
                     </div>
                     <div>
-                      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         <DollarSign className="w-4 h-4 text-green-600" />
                         💰 Price (₹)
                       </label>
                       <input
                         type="number"
-                        className="w-full px-4 py-3 border-2 border-green-200 rounded-xl outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 text-sm font-medium transition-all"
+                        className="w-full px-4 py-3 bg-white dark:bg-gray-900 border-2 border-green-200 dark:border-green-900/50 rounded-xl outline-none focus:border-green-500 focus:ring-4 focus:ring-green-500/10 text-slate-700 dark:text-slate-200 font-medium transition-all"
                         value={formData.originalPrice}
                         onChange={(e) =>
                           setFormData({
@@ -374,7 +373,7 @@ const SeriesDashboard = () => {
                   transition={{ delay: 0.2 }}
                   className="space-y-6"
                 >
-                  <div className="flex items-center gap-3 pb-3 border-b-2 border-purple-200">
+                  <div className="flex items-center gap-3 pb-3 border-b-2 border-purple-200 dark:border-purple-800">
                     <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
                       <Layers className="w-5 h-5 text-white" />
                     </div>
@@ -413,7 +412,7 @@ const SeriesDashboard = () => {
 
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center gap-4 mt-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200"
+                    className="flex items-center gap-4 mt-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-800"
                   >
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
@@ -429,7 +428,7 @@ const SeriesDashboard = () => {
                       />
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        <span className="font-bold text-slate-700">
+                        <span className="font-bold text-slate-700 dark:text-slate-200">
                           ✅ Active / Published
                         </span>
                       </div>
@@ -442,7 +441,7 @@ const SeriesDashboard = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="pt-6 border-t-2 border-indigo-100 flex justify-end"
+                className="pt-6 border-t-2 border-indigo-100 dark:border-indigo-900/50 flex justify-end"
               >
                 <motion.button
                   type="submit"
@@ -497,9 +496,9 @@ const SeriesDashboard = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-16 text-slate-400 font-medium bg-white rounded-2xl border-2 border-dashed border-slate-200"
+                    className="text-center py-16 text-slate-400 font-medium bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-slate-200 dark:border-gray-700"
                   >
-                    <Trophy className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <Trophy className="w-16 h-16 text-slate-200 dark:text-gray-700 mx-auto mb-4" />
                     <p className="text-lg font-bold">No tests created yet</p>
                     <p className="text-sm mt-2">
                       Click "Add Test" to get started
@@ -515,7 +514,7 @@ const SeriesDashboard = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: i * 0.05 }}
                     whileHover={{ scale: 1.02, y: -2 }}
-                    className="relative overflow-hidden bg-gradient-to-br from-white to-indigo-50 p-6 rounded-2xl border-2 border-indigo-100 shadow-md hover:shadow-xl transition-all flex justify-between items-center group"
+                    className="relative overflow-hidden bg-gradient-to-br from-white to-indigo-50 dark:from-gray-800 dark:to-gray-900/50 p-6 rounded-2xl border-2 border-indigo-100 dark:border-gray-700 shadow-md hover:shadow-xl transition-all flex justify-between items-center group"
                   >
                     <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500 rounded-l-2xl"></div>
 
@@ -524,20 +523,20 @@ const SeriesDashboard = () => {
                         {i + 1}
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-800 text-lg mb-2">
+                        <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-2">
                           {test.testName}
                         </h3>
                         <div className="flex gap-2 text-xs font-medium">
-                          <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-1">
+                          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg flex items-center gap-1">
                             <FileText className="w-3 h-3" />
                             {test.noOfQuestions || 0} Qs
                           </span>
-                          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-lg flex items-center gap-1">
+                          <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1 rounded-lg flex items-center gap-1">
                             <Trophy className="w-3 h-3" />
                             {test.totalMarks || 0} Marks
                           </span>
                           <span
-                            className={`${test.isFree ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"} px-3 py-1 rounded-lg flex items-center gap-1`}
+                            className={`${test.isFree ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"} px-3 py-1 rounded-lg flex items-center gap-1`}
                           >
                             <Tag className="w-3 h-3" />
                             {test.isFree ? "Free" : "Paid"}
@@ -560,7 +559,7 @@ const SeriesDashboard = () => {
                         onClick={() => handleDeleteTest(test._id)}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="p-3 bg-rose-100 text-rose-600 rounded-xl hover:bg-rose-200 transition-all"
+                        className="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </motion.button>
@@ -575,10 +574,5 @@ const SeriesDashboard = () => {
     </div>
   );
 };
-
-// CSS Utils
-const label = "block text-xs font-bold text-slate-500 uppercase mb-1.5";
-const input =
-  "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-slate-700";
 
 export default SeriesDashboard;

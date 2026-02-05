@@ -101,32 +101,24 @@ const Dashboard = () => {
       value: `₹${totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       gradient: "from-emerald-500 to-teal-500",
-      bgGradient: "from-emerald-50 to-teal-50",
-      darkBg: "from-emerald-950/30 to-teal-950/30",
     },
     {
       title: "Total Orders",
       value: orders.length,
       icon: ShoppingCart,
       gradient: "from-blue-500 to-indigo-500",
-      bgGradient: "from-blue-50 to-indigo-50",
-      darkBg: "from-blue-950/30 to-indigo-950/30",
     },
     {
       title: "Pending Orders",
       value: pendingOrders,
       icon: Clock,
       gradient: "from-purple-500 to-pink-500",
-      bgGradient: "from-purple-50 to-pink-50",
-      darkBg: "from-purple-950/30 to-pink-950/30",
     },
     {
       title: "Active Courses",
       value: activeCourses,
       icon: BookOpen,
       gradient: "from-orange-500 to-red-500",
-      bgGradient: "from-orange-50 to-red-50",
-      darkBg: "from-orange-950/30 to-red-950/30",
     },
   ];
 
@@ -215,29 +207,20 @@ const Dashboard = () => {
   ];
 
   const colorClasses = {
-    blue: "from-blue-500 to-blue-600 shadow-blue-200 dark:shadow-blue-900/30",
-    rose: "from-rose-500 to-rose-600 shadow-rose-200 dark:shadow-rose-900/30",
-    purple:
-      "from-purple-500 to-purple-600 shadow-purple-200 dark:shadow-purple-900/30",
-    green:
-      "from-green-500 to-green-600 shadow-green-200 dark:shadow-green-900/30",
-    orange:
-      "from-orange-500 to-orange-600 shadow-orange-200 dark:shadow-orange-900/30",
-    teal: "from-teal-500 to-teal-600 shadow-teal-200 dark:shadow-teal-900/30",
-    indigo:
-      "from-indigo-500 to-indigo-600 shadow-indigo-200 dark:shadow-indigo-900/30",
-    pink: "from-pink-500 to-pink-600 shadow-pink-200 dark:shadow-pink-900/30",
-    yellow:
-      "from-yellow-500 to-yellow-600 shadow-yellow-200 dark:shadow-yellow-900/30",
-    cyan: "from-cyan-500 to-cyan-600 shadow-cyan-200 dark:shadow-cyan-900/30",
-    violet:
-      "from-violet-500 to-violet-600 shadow-violet-200 dark:shadow-violet-900/30",
-    fuchsia:
-      "from-fuchsia-500 to-fuchsia-600 shadow-fuchsia-200 dark:shadow-fuchsia-900/30",
-    emerald:
-      "from-emerald-500 to-emerald-600 shadow-emerald-200 dark:shadow-emerald-900/30",
-    amber:
-      "from-amber-500 to-amber-600 shadow-amber-200 dark:shadow-amber-900/30",
+    blue: "from-blue-500 to-blue-600 shadow-blue-200",
+    rose: "from-rose-500 to-rose-600 shadow-rose-200",
+    purple: "from-purple-500 to-purple-600 shadow-purple-200",
+    green: "from-green-500 to-green-600 shadow-green-200",
+    orange: "from-orange-500 to-orange-600 shadow-orange-200",
+    teal: "from-teal-500 to-teal-600 shadow-teal-200",
+    indigo: "from-indigo-500 to-indigo-600 shadow-indigo-200",
+    pink: "from-pink-500 to-pink-600 shadow-pink-200",
+    yellow: "from-yellow-500 to-yellow-600 shadow-yellow-200",
+    cyan: "from-cyan-500 to-cyan-600 shadow-cyan-200",
+    violet: "from-violet-500 to-violet-600 shadow-violet-200",
+    fuchsia: "from-fuchsia-500 to-fuchsia-600 shadow-fuchsia-200",
+    emerald: "from-emerald-500 to-emerald-600 shadow-emerald-200",
+    amber: "from-amber-500 to-amber-600 shadow-amber-200",
   };
 
   const borderColors = {
@@ -257,7 +240,7 @@ const Dashboard = () => {
     amber: "#f59e0b",
   };
 
-  // Learning Management Content - Only 8 core learning items (no coupons/orders)
+  // Learning Management Content
   const learningContent = [
     { name: "Courses", value: courses.length, color: "#3b82f6" },
     { name: "Live Classes", value: liveClasses.length, color: "#f43f5e" },
@@ -276,11 +259,11 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Hero Header with animated gradient */}
+      {/* Hero Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-3xl p-8 shadow-2xl"
+        className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 shadow-2xl"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full -ml-48 -mb-48 blur-3xl" />
@@ -318,7 +301,7 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
-      {/* Top Stats Cards - Large Animated Cards */}
+      {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {topStats.map((stat, index) => {
           const Icon = stat.icon;
@@ -330,11 +313,10 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.02, y: -5 }}
-              className={`relative overflow-hidden bg-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-border`}
+              className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200"
             >
-              {/* Animated background circles */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 dark:bg-white/5 rounded-full -mr-16 -mt-16" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/20 dark:bg-white/5 rounded-full -ml-12 -mb-12" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 rounded-full -mr-16 -mt-16" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/20 rounded-full -ml-12 -mb-12" />
 
               <div className="relative z-10">
                 <div className="flex items-start justify-between mb-4">
@@ -345,10 +327,10 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <h3 className="text-sm font-semibold text-text-sub mb-1">
+                <h3 className="text-sm font-semibold text-slate-600 mb-1">
                   {stat.title}
                 </h3>
-                <p className="text-3xl font-black text-text-main">
+                <p className="text-3xl font-black text-slate-900">
                   {stat.value}
                 </p>
               </div>
@@ -357,25 +339,23 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Learning Management Content Distribution - PIE CHART ONLY */}
+      {/* Learning Management Content Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pie Chart Visualization */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="lg:col-span-2 bg-card rounded-2xl p-6 shadow-lg border border-border"
+          className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <PieChart className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-xl font-black text-text-main">
+            <h3 className="text-xl font-black text-slate-900">
               Learning Management Content
             </h3>
           </div>
 
           <div className="flex items-center justify-center">
-            {/* Pie Chart */}
             <div className="relative w-80 h-80">
               <svg className="w-full h-full transform -rotate-90">
                 <circle
@@ -385,7 +365,7 @@ const Dashboard = () => {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="20"
-                  className="text-border"
+                  className="text-slate-200"
                 />
                 {learningContent.map((item, index) => {
                   const percentage =
@@ -424,17 +404,16 @@ const Dashboard = () => {
                 })}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-black text-text-main">
+                <span className="text-5xl font-black text-slate-900">
                   {totalLearningContent}
                 </span>
-                <span className="text-sm text-text-sub mt-2">
+                <span className="text-sm text-slate-600 mt-2">
                   Total Learning Items
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Legend */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
             {learningContent.map((item, index) => {
               const percentage =
@@ -448,10 +427,10 @@ const Dashboard = () => {
                     style={{ backgroundColor: item.color }}
                   />
                   <div className="flex-1">
-                    <div className="text-xs font-bold text-text-main">
+                    <div className="text-xs font-bold text-slate-900">
                       {item.name}
                     </div>
-                    <div className="text-xs text-text-sub">
+                    <div className="text-xs text-slate-600">
                       {item.value} ({percentage}%)
                     </div>
                   </div>
@@ -461,73 +440,72 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        {/* Quick Actions & Stats */}
+        {/* Quick Stats */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-card rounded-2xl p-6 shadow-lg border border-border"
+          className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-xl font-black text-text-main">Quick Stats</h3>
+            <h3 className="text-xl font-black text-slate-900">Quick Stats</h3>
           </div>
 
           <div className="space-y-4">
-            {/* Active status */}
-            <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl border-2 border-green-200 dark:border-green-800">
+            <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-text-main">
+                <span className="text-sm font-bold text-slate-900">
                   🟢 Active Courses
                 </span>
                 <span className="text-2xl font-black text-green-600">
                   {activeCourses}
                 </span>
               </div>
-              <div className="text-xs text-text-sub">
+              <div className="text-xs text-slate-600">
                 Out of {courses.length} total courses
               </div>
             </div>
 
-            <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-xl border-2 border-rose-200 dark:border-rose-800">
+            <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border-2 border-rose-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-bold text-slate-900">
                   🎥 Live Classes
                 </span>
                 <span className="text-2xl font-black text-rose-600">
                   {activeLiveClasses}
                 </span>
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
+              <div className="text-xs text-slate-600">
                 Active sessions running
               </div>
             </div>
 
-            <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border-2 border-orange-200 dark:border-orange-800">
+            <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-bold text-slate-900">
                   ⏳ Pending Orders
                 </span>
                 <span className="text-2xl font-black text-orange-600">
                   {pendingOrders}
                 </span>
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
+              <div className="text-xs text-slate-600">
                 Awaiting processing
               </div>
             </div>
 
-            <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+            <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border-2 border-purple-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-bold text-slate-900">
                   ✅ Completed
                 </span>
                 <span className="text-2xl font-black text-purple-600">
                   {completedOrders}
                 </span>
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
+              <div className="text-xs text-slate-600">
                 Successfully delivered
               </div>
             </div>
@@ -541,7 +519,7 @@ const Dashboard = () => {
           <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
             <Layers className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-2xl font-black text-text-main">
+          <h3 className="text-2xl font-black text-slate-900">
             All Content Modules
           </h3>
         </div>
@@ -557,12 +535,11 @@ const Dashboard = () => {
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ scale: 1.05, y: -5 }}
                 onClick={() => navigate(stat.link)}
-                className="group relative overflow-hidden bg-card rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 cursor-pointer"
+                className="group relative overflow-hidden bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 cursor-pointer"
                 style={{
                   borderColor: borderColors[stat.color],
                 }}
               >
-                {/* Gradient overlay */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${colorClasses[stat.color]} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
                 />
@@ -576,28 +553,27 @@ const Dashboard = () => {
                     </div>
                     {stat.active !== undefined && (
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-xs font-bold text-green-600 dark:text-green-400">
+                        <span className="text-xs font-bold text-green-600">
                           {stat.active} Active
                         </span>
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                       </div>
                     )}
                     {stat.pending !== undefined && stat.pending > 0 && (
-                      <span className="px-2 py-1 text-xs font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                      <span className="px-2 py-1 text-xs font-bold text-orange-600 bg-orange-100 rounded-full">
                         {stat.pending} Pending
                       </span>
                     )}
                   </div>
 
-                  <h3 className="text-sm font-bold text-text-sub mb-2">
+                  <h3 className="text-sm font-bold text-slate-600 mb-2">
                     {stat.title}
                   </h3>
-                  <p className="text-4xl font-black text-text-main mb-3">
+                  <p className="text-4xl font-black text-slate-900 mb-3">
                     {stat.count}
                   </p>
 
-                  {/* Hover indicator */}
-                  <div className="mt-4 flex items-center gap-2 text-xs font-bold text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <div className="mt-4 flex items-center gap-2 text-xs font-bold text-gray-400 group-hover:text-indigo-600 transition-colors">
                     <Eye className="w-3 h-3" />
                     <span>Click to manage</span>
                   </div>
@@ -608,7 +584,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Bottom Summary Cards - REAL DATA */}
+      {/* Bottom Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

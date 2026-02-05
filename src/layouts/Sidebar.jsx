@@ -9,7 +9,6 @@ import {
   Newspaper,
   ShoppingCart,
   Users,
-  Settings,
   LogOut,
   X,
   HelpCircle,
@@ -261,14 +260,6 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               to="/validity"
               icon={Clock}
               label="Validities"
-              onClick={handleLinkClick}
-              isMobile={isMobile}
-            />
-
-            <NavItem
-              to="/settings"
-              icon={Settings}
-              label="Settings"
               onClick={handleLinkClick}
               isMobile={isMobile}
             />

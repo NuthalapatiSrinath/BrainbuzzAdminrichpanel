@@ -9,7 +9,6 @@ import Layout from "../layouts/Layout";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import NotFound from "../pages/NotFound";
-import Settings from "../pages/Settings";
 import BannerManager from "../pages/content/BannerManager";
 import CouponManager from "../pages/content/CouponManager";
 import OrderManager from "../pages/content/OrderManager";
@@ -197,13 +196,6 @@ export const appRoutes = [
     path: "/reports",
     element: <Placeholder title="Reports" />,
     title: "Business Reports",
-  },
-
-  // System
-  {
-    path: "/settings",
-    element: <Settings />,
-    title: "System Settings",
   },
 
   // Support

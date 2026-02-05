@@ -76,7 +76,11 @@ const GenericModal = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-slate-900/80 via-indigo-900/70 to-purple-900/80 backdrop-blur-lg"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-lg"
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(30, 91, 198, 0.9) 0%, rgba(74, 222, 128, 0.7) 100%)",
+      }}
       onClick={onClose}
     >
       <motion.div
@@ -85,15 +89,41 @@ const GenericModal = ({
         exit={{ scale: 0.8, y: 50, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-gradient-to-br from-white via-indigo-50/40 to-purple-50/40 dark:from-slate-800 dark:via-slate-850 dark:to-slate-900 rounded-3xl shadow-2xl border-2 border-indigo-200/50 dark:border-slate-700 w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+        style={{
+          background:
+            "linear-gradient(135deg, #ffffff 0%, var(--color-brand-blue-lighter) 100%)",
+          borderWidth: "2px",
+          borderStyle: "solid",
+          borderColor: "var(--color-brand-blue)",
+        }}
       >
-        {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl"></div>
+        {/* Decorative Elements - Brain Buzz Theme */}
+        <div
+          className="absolute top-0 left-0 w-full h-1"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--color-brand-blue) 0%, var(--color-brand-green) 100%)",
+          }}
+        ></div>
+        <div
+          className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl"
+          style={{ backgroundColor: "var(--color-brand-blue)", opacity: 0.2 }}
+        ></div>
+        <div
+          className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl"
+          style={{ backgroundColor: "var(--color-brand-green)", opacity: 0.2 }}
+        ></div>
 
         {/* Header */}
-        <div className="relative flex items-center justify-between px-8 py-6 border-b-2 border-indigo-100 dark:border-slate-700 bg-gradient-to-r from-white via-indigo-50/60 to-purple-50/60 dark:from-slate-800 dark:via-slate-850 dark:to-slate-900">
+        <div
+          className="relative flex items-center justify-between px-8 py-6 border-b-2"
+          style={{
+            borderColor: "var(--color-brand-blue-light)",
+            background:
+              "linear-gradient(90deg, #ffffff 0%, var(--color-brand-blue-lighter) 100%)",
+          }}
+        >
           <motion.h2
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -103,11 +133,25 @@ const GenericModal = ({
             <motion.div
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="p-3 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl text-white shadow-2xl shadow-indigo-500/50"
+              className="p-3 rounded-2xl text-white shadow-2xl"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--color-brand-blue) 0%, var(--color-brand-green) 100%)",
+                boxShadow:
+                  "0 20px 25px -5px rgba(30, 91, 198, 0.3), 0 10px 10px -5px rgba(30, 91, 198, 0.2)",
+              }}
             >
               <Sparkles className="w-6 h-6" />
             </motion.div>
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span
+              style={{
+                background:
+                  "linear-gradient(90deg, var(--color-brand-blue) 0%, var(--color-brand-green) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
               {title}
             </span>
           </motion.h2>
@@ -151,14 +195,33 @@ const GenericModal = ({
                       field.type === "date" ||
                       field.type === "number") && (
                       <div className="relative group">
-                        <Icon className="absolute left-4 top-4 w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
+                        <Icon
+                          className="absolute left-4 top-4 w-5 h-5 text-slate-400 dark:text-slate-500 transition-colors"
+                          style={{ color: "var(--color-text-muted)" }}
+                        />
                         <input
                           type={field.type}
                           value={formData[field.name] || ""}
                           onChange={(e) =>
                             handleChange(field.name, e.target.value)
                           }
-                          className="w-full pl-12 pr-4 py-4 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-900 dark:text-white bg-white dark:bg-slate-900 shadow-lg hover:shadow-xl placeholder:text-slate-400"
+                          className="w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 outline-none transition-all font-semibold shadow-lg hover:shadow-xl"
+                          style={{
+                            borderColor: "var(--color-input-border)",
+                            backgroundColor: "var(--color-input-bg)",
+                            color: "var(--color-input-text)",
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor =
+                              "var(--color-brand-blue)";
+                            e.target.style.boxShadow =
+                              "0 0 0 4px rgba(30, 91, 198, 0.1)";
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor =
+                              "var(--color-input-border)";
+                            e.target.style.boxShadow = "";
+                          }}
                           placeholder={field.placeholder}
                           required={field.required}
                           disabled={field.disabled}
@@ -263,7 +326,19 @@ const GenericModal = ({
             whileTap={{ scale: 0.95 }}
             type="submit"
             form="generic-form"
-            className="relative px-10 py-3.5 text-sm font-extrabold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 shadow-2xl shadow-indigo-500/50 flex items-center gap-3 transition-all overflow-hidden group"
+            className="relative px-10 py-3.5 text-sm font-extrabold text-white rounded-xl shadow-2xl flex items-center gap-3 transition-all overflow-hidden group"
+            style={{
+              background:
+                "linear-gradient(90deg, var(--color-brand-blue) 0%, var(--color-brand-green) 100%)",
+              boxShadow:
+                "0 20px 25px -5px rgba(30, 91, 198, 0.3), 0 10px 10px -5px rgba(30, 91, 198, 0.2)",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05) translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1) translateY(0)";
+            }}
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"

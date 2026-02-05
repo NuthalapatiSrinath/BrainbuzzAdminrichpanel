@@ -42,7 +42,6 @@ const Layout = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 👉 Zoom ONLY on mobile
   const contentStyle = isMobile
     ? {
         zoom: zoomScale,
@@ -53,7 +52,10 @@ const Layout = () => {
     : {};
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-purple-950/20 text-text-main font-sans transition-colors duration-300 flex overflow-x-hidden">
+    <div
+      className="min-h-screen font-sans transition-colors duration-300 flex overflow-x-hidden text-slate-800 dark:text-slate-200"
+      style={{ background: "var(--color-page)" }}
+    >
       <Sidebar
         isOpen={isSidebarOpen}
         isMobile={isMobile}
@@ -71,12 +73,15 @@ const Layout = () => {
           toggleTheme={toggleTheme}
         />
 
-        <main className="flex-1 overflow-x-hidden w-full">
+        {/* Removed specific bg from main so it is transparent and shows the outer gradient */}
+        <main
+          className="flex-1 overflow-x-hidden w-full force-light-content"
+          style={contentStyle}
+        >
           <div
             className={`animate-fade-in origin-top-left ${
               isMobile ? "" : "max-w-[1400px] mx-auto w-full"
             }`}
-            style={contentStyle}
           >
             <Outlet />
           </div>

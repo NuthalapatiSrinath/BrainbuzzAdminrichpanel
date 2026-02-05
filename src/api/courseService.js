@@ -244,6 +244,235 @@ const courseService = {
     );
     return response.data;
   },
+
+  // Create course shell (Step 1: Draft creation)
+  createCourseShell: async (data) => {
+    const formData = new FormData();
+    if (data.contentType) formData.append("contentType", data.contentType);
+    if (data.startDate) formData.append("startDate", data.startDate);
+    if (data.categoryIds)
+      formData.append("categoryIds", JSON.stringify(data.categoryIds));
+    if (data.subCategoryIds)
+      formData.append("subCategoryIds", JSON.stringify(data.subCategoryIds));
+
+    const response = await axiosInstance.post("/admin/courses", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  // Update course shell (contentType, categories, subcategories, date)
+  updateCourseShell: async (id, data) => {
+    const formData = new FormData();
+    if (data.contentType) formData.append("contentType", data.contentType);
+    if (data.startDate) formData.append("startDate", data.startDate);
+    if (data.categoryIds)
+      formData.append("categoryIds", JSON.stringify(data.categoryIds));
+    if (data.subCategoryIds)
+      formData.append("subCategoryIds", JSON.stringify(data.subCategoryIds));
+
+    const response = await axiosInstance.put(`/admin/courses/${id}`, formData);
+    return response.data;
+  },
+
+  // Update course basics (Step 2: name, pricing, languages, validity, thumbnail)
+  updateCourseBasic: async (id, data) => {
+    const formData = new FormData();
+    if (data.name) formData.append("name", data.name);
+    if (data.courseType) formData.append("courseType", data.courseType);
+    if (data.languageIds)
+      formData.append("languageIds", JSON.stringify(data.languageIds));
+    if (data.validityIds)
+      formData.append("validityIds", JSON.stringify(data.validityIds));
+    if (data.originalPrice !== undefined)
+      formData.append("originalPrice", data.originalPrice);
+    if (data.discountPrice !== undefined)
+      formData.append("discountPrice", data.discountPrice);
+    if (data.thumbnail) formData.append("thumbnail", data.thumbnail);
+
+    const response = await axiosInstance.put(
+      `/admin/courses/${id}/basics`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // Update course content (Step 3: descriptions, study materials)
+  updateCourseContent: async (id, data) => {
+    const formData = new FormData();
+    if (data.shortDescription)
+      formData.append("shortDescription", data.shortDescription);
+    if (data.detailedDescription)
+      formData.append("detailedDescription", data.detailedDescription);
+    if (data.pricingNote) formData.append("pricingNote", data.pricingNote);
+    if (data.studyMaterials)
+      formData.append("studyMaterials", JSON.stringify(data.studyMaterials));
+
+    // Append study material files
+    if (data.studyMaterialFiles && Array.isArray(data.studyMaterialFiles)) {
+      data.studyMaterialFiles.forEach((file) => {
+        formData.append("studyMaterialFiles", file);
+      });
+    }
+
+    const response = await axiosInstance.put(
+      `/admin/courses/${id}/content`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // Update course descriptions only
+  updateCourseDescriptions: async (id, data) => {
+    const response = await axiosInstance.put(
+      `/admin/courses/${id}/descriptions`,
+      data,
+    );
+    return response.data;
+  },
+
+  // Delete study material
+  deleteStudyMaterial: async (courseId, materialId) => {
+    const response = await axiosInstance.delete(
+      `/admin/courses/${courseId}/study-materials/${materialId}`,
+    );
+    return response.data;
+  },
+
+  // Add tutors to course
+  addTutors: async (id, tutors, tutorImages) => {
+    const formData = new FormData();
+    formData.append("tutors", JSON.stringify(tutors));
+
+    // Append tutor images (must match tutors array order)
+    if (tutorImages && Array.isArray(tutorImages)) {
+      tutorImages.forEach((image) => {
+        if (image) formData.append("tutorImages", image);
+      });
+    }
+
+    const response = await axiosInstance.post(
+      `/admin/courses/${id}/tutors`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // Update single tutor
+  updateTutor: async (courseId, tutorId, data) => {
+    const formData = new FormData();
+    if (data.name) formData.append("name", data.name);
+    if (data.qualification)
+      formData.append("qualification", data.qualification);
+    if (data.subject) formData.append("subject", data.subject);
+    if (data.photo) formData.append("tutorImage", data.photo);
+
+    const response = await axiosInstance.put(
+      `/admin/courses/${courseId}/tutors/${tutorId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // Delete tutor
+  deleteTutor: async (courseId, tutorId) => {
+    const response = await axiosInstance.delete(
+      `/admin/courses/${courseId}/tutors/${tutorId}`,
+    );
+    return response.data;
+  },
+
+  // Add classes to course
+  addClassesToCourse: async (id, classes, classMedia) => {
+    const formData = new FormData();
+    formData.append("classes", JSON.stringify(classes));
+
+    // Append class media (must match classes array order)
+    if (classMedia) {
+      if (classMedia.thumbnails && Array.isArray(classMedia.thumbnails)) {
+        classMedia.thumbnails.forEach((file) => {
+          if (file) formData.append("classThumbnails", file);
+        });
+      }
+      if (classMedia.lecturePics && Array.isArray(classMedia.lecturePics)) {
+        classMedia.lecturePics.forEach((file) => {
+          if (file) formData.append("classLecturePics", file);
+        });
+      }
+      if (classMedia.videos && Array.isArray(classMedia.videos)) {
+        classMedia.videos.forEach((file) => {
+          if (file) formData.append("classVideos", file);
+        });
+      }
+    }
+
+    const response = await axiosInstance.post(
+      `/admin/courses/${id}/classes`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // Update single class
+  updateClass: async (courseId, classId, data) => {
+    const formData = new FormData();
+    if (data.title) formData.append("title", data.title);
+    if (data.topic) formData.append("topic", data.topic);
+    if (data.order !== undefined) formData.append("order", data.order);
+    if (data.isFree !== undefined) formData.append("isFree", data.isFree);
+    if (data.thumbnail) formData.append("thumbnail", data.thumbnail);
+    if (data.lecturePhoto) formData.append("lecturePhoto", data.lecturePhoto);
+    if (data.video) formData.append("video", data.video);
+
+    const response = await axiosInstance.put(
+      `/admin/courses/${courseId}/classes/${classId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // Delete class
+  deleteClass: async (courseId, classId) => {
+    const response = await axiosInstance.delete(
+      `/admin/courses/${courseId}/classes/${classId}`,
+    );
+    return response.data;
+  },
+
+  // Upload class media (alternative endpoint for media only)
+  uploadClassMedia: async (courseId, classId, files) => {
+    const formData = new FormData();
+    if (files.thumbnail) formData.append("thumbnail", files.thumbnail);
+    if (files.lecturePhoto) formData.append("lecturePhoto", files.lecturePhoto);
+    if (files.video) formData.append("video", files.video);
+
+    const response = await axiosInstance.put(
+      `/admin/courses/${courseId}/classes/${classId}/media`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
 };
 
 export default courseService;

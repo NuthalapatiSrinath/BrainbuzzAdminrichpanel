@@ -32,7 +32,7 @@ const PaginationDropdown = ({ value, onChange, options }) => {
   };
 
   // Handle window resize to close dropdown if open (prevents floating issues)
-  useEffect(() => {
+  React.useEffect(() => {
     const handleResize = () => setIsOpen(false);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -43,7 +43,7 @@ const PaginationDropdown = ({ value, onChange, options }) => {
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-400 dark:hover:border-indigo-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 transition-all shadow-sm hover:shadow-md"
+        className="flex items-center gap-2 bg-white border-2 border-slate-200 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-indigo-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all shadow-sm hover:shadow-md"
       >
         <span>{value}</span>
         <ChevronDown
@@ -73,7 +73,7 @@ const PaginationDropdown = ({ value, onChange, options }) => {
                     left: coords.left,
                     minWidth: "80px", // Ensure it's not too thin
                   }}
-                  className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden"
+                  className="bg-white border-2 border-slate-200 rounded-lg shadow-2xl overflow-hidden"
                 >
                   {options.map((option) => (
                     <button
@@ -82,10 +82,10 @@ const PaginationDropdown = ({ value, onChange, options }) => {
                         onChange(option);
                         setIsOpen(false);
                       }}
-                      className={`w-full px-4 py-2 text-sm text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors flex items-center justify-between whitespace-nowrap ${
+                      className={`w-full px-4 py-2 text-sm text-left hover:bg-indigo-50 transition-colors flex items-center justify-between whitespace-nowrap ${
                         value === option
-                          ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-medium"
-                          : "text-slate-700 dark:text-slate-300"
+                          ? "bg-indigo-100 text-indigo-600 font-medium"
+                          : "text-slate-700"
                       }`}
                     >
                       <span>{option}</span>
@@ -192,19 +192,16 @@ const DataTable = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col w-full h-full bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl relative overflow-hidden" // Main container hidden
+      className="flex flex-col w-full h-full bg-white rounded-2xl border border-slate-200 shadow-xl relative overflow-hidden" // Main container
     >
       {/* HEADER */}
-      <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between gap-4 flex-shrink-0 bg-white dark:bg-slate-800 z-20">
+      <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between gap-4 flex-shrink-0 bg-white z-20">
         <div>
-          <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent tracking-tight">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent tracking-tight">
             {title}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 font-medium">
-            Found{" "}
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">
-              {total}
-            </span>{" "}
+          <p className="text-sm text-slate-600 mt-1 font-medium">
+            Found <span className="text-indigo-600 font-bold">{total}</span>{" "}
             records
           </p>
         </div>
@@ -217,7 +214,7 @@ const DataTable = ({
                 placeholder="Search..."
                 defaultValue={isServer ? "" : localSearch}
                 onChange={handleSearch}
-                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm w-full sm:w-[260px] outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 transition-all placeholder:text-slate-400 font-medium text-slate-900 dark:text-white shadow-sm"
+                className="pl-10 pr-4 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-sm w-full sm:w-[260px] outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-400 font-medium text-slate-900 shadow-sm"
               />
             </div>
           )}
@@ -226,23 +223,23 @@ const DataTable = ({
       </div>
 
       {/* TABLE AREA CONTAINER */}
-      <div className="flex-1 relative w-full overflow-hidden flex flex-col bg-white dark:bg-slate-800">
+      <div className="flex-1 relative w-full overflow-hidden flex flex-col bg-white">
         <AnimatePresence>
           {loading && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center"
+              className="absolute inset-0 z-30 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center"
             >
-              <div className="bg-gradient-to-br from-white to-indigo-50 dark:from-slate-800 dark:to-indigo-900/20 p-8 rounded-2xl shadow-2xl border-2 border-indigo-100 dark:border-indigo-800 flex flex-col items-center gap-4">
+              <div className="bg-gradient-to-br from-white to-indigo-50 p-8 rounded-2xl shadow-2xl border-2 border-indigo-100 flex flex-col items-center gap-4">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 >
-                  <Loader2 className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
+                  <Loader2 className="w-12 h-12 text-indigo-600" />
                 </motion.div>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                <span className="text-sm font-bold text-slate-700">
                   Loading Data...
                 </span>
               </div>
@@ -253,12 +250,12 @@ const DataTable = ({
         {/* SCROLLABLE TABLE WRAPPER */}
         <div className="flex-1 w-full overflow-auto custom-scrollbar">
           <table className="min-w-full whitespace-nowrap text-left border-collapse">
-            <thead className="sticky top-0 bg-slate-50 dark:bg-slate-900 backdrop-blur-md z-10 shadow-sm border-b-2 border-slate-200 dark:border-slate-700">
+            <thead className="sticky top-0 bg-slate-50 backdrop-blur-md z-10 shadow-sm border-b-2 border-slate-200">
               <tr>
                 {columns.map((c, i) => (
                   <th
                     key={i}
-                    className={`px-5 py-4 text-xs font-extrabold uppercase text-slate-600 dark:text-slate-400 tracking-wider ${
+                    className={`px-5 py-4 text-xs font-extrabold uppercase text-slate-600 tracking-wider ${
                       c.className || ""
                     }`}
                   >
@@ -271,7 +268,7 @@ const DataTable = ({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
+            <tbody className="divide-y divide-slate-100 bg-white">
               {!loading && rows.length === 0 && (
                 <tr>
                   <td
@@ -290,14 +287,14 @@ const DataTable = ({
                           repeat: Infinity,
                           ease: "easeInOut",
                         }}
-                        className="w-24 h-24 bg-gradient-to-br from-slate-100 to-indigo-50 dark:from-slate-700 dark:to-indigo-900/20 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
+                        className="w-24 h-24 bg-gradient-to-br from-slate-100 to-indigo-50 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
                       >
-                        <Inbox className="w-12 h-12 text-slate-400 dark:text-slate-500" />
+                        <Inbox className="w-12 h-12 text-slate-400" />
                       </motion.div>
-                      <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                      <h3 className="text-lg font-bold text-slate-800">
                         No Data Found
                       </h3>
-                      <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 max-w-xs mx-auto">
+                      <p className="text-slate-500 text-sm mt-2 max-w-xs mx-auto">
                         We couldn't find any records matching your search or
                         filters.
                       </p>
@@ -316,14 +313,14 @@ const DataTable = ({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className={`group transition-all duration-200 hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/30 dark:hover:from-indigo-900/20 dark:hover:to-purple-900/10 ${
-                        expanded ? "bg-indigo-50/30 dark:bg-indigo-900/20" : ""
+                      className={`group transition-all duration-200 hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/30 ${
+                        expanded ? "bg-indigo-50/30" : ""
                       }`}
                     >
                       {columns.map((c, j) => (
                         <td
                           key={j}
-                          className={`px-5 py-4 text-sm font-medium text-slate-700 dark:text-slate-300 border-b border-transparent group-hover:border-indigo-100 dark:group-hover:border-indigo-800 ${
+                          className={`px-5 py-4 text-sm font-medium text-slate-700 border-b border-transparent group-hover:border-indigo-100 ${
                             c.className || ""
                           }`}
                         >
@@ -367,10 +364,10 @@ const DataTable = ({
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="bg-gradient-to-br from-indigo-50/30 to-purple-50/20 dark:from-indigo-900/10 dark:to-purple-900/5 overflow-hidden"
+                            className="bg-gradient-to-br from-indigo-50/30 to-purple-50/20 overflow-hidden"
                           >
                             <div className="p-6">
-                              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-lg">
+                              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-lg">
                                 {renderExpandedRow(row)}
                               </div>
                             </div>
@@ -387,9 +384,9 @@ const DataTable = ({
       </div>
 
       {/* FOOTER */}
-      <div className="px-6 py-3 border-t-2 border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-850 flex flex-col sm:flex-row gap-3 items-center justify-between flex-shrink-0">
+      <div className="px-6 py-3 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 to-white flex flex-col sm:flex-row gap-3 items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <span className="text-sm font-medium text-slate-700">
             Rows per page:
           </span>
           <PaginationDropdown
@@ -399,7 +396,7 @@ const DataTable = ({
           />
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border-2 border-slate-200 shadow-sm">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -420,8 +417,8 @@ const DataTable = ({
                 onClick={() => typeof p === "number" && changePage(p)}
                 className={`w-10 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
                   p === page
-                    ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-300 dark:shadow-indigo-900"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-gradient-to-br hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900 dark:hover:to-purple-900 hover:shadow-md hover:text-indigo-600 dark:hover:text-indigo-400"
+                    ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-300"
+                    : "text-slate-600 hover:bg-gradient-to-br hover:from-indigo-50 hover:to-purple-50 hover:shadow-md hover:text-indigo-600"
                 } ${
                   p === "..."
                     ? "hover:bg-transparent hover:shadow-none cursor-default"
@@ -433,7 +430,7 @@ const DataTable = ({
             ))}
           </div>
 
-          <span className="sm:hidden text-sm font-bold text-slate-700 dark:text-slate-300 px-4">
+          <span className="sm:hidden text-sm font-bold text-slate-700 px-4">
             {page} / {totalPages}
           </span>
 
