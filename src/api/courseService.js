@@ -1,64 +1,64 @@
 import axiosInstance from "./axiosInstance";
 
 const courseService = {
-  // Get all courses with filters
+  // ==========================================
+  // 1. CORE READ OPERATIONS
+  // ==========================================
+
   getAll: async (params = {}) => {
     const response = await axiosInstance.get("/admin/courses", { params });
     return response.data;
   },
 
-  // Get single course by ID
   getById: async (id) => {
     const response = await axiosInstance.get(`/admin/courses/${id}`);
     return response.data;
   },
 
-  // Create complete course in one API call
+  // ==========================================
+  // 2. CREATE COURSE (Matches Backend: createFullCourse)
+  // ==========================================
   createFull: async (courseData) => {
+    console.log("🚀 Service: createFull payload:", courseData);
     const formData = new FormData();
 
-    // Basic fields
-    formData.append("contentType", courseData.contentType || "ONLINE_COURSE");
-    formData.append("name", courseData.name);
-    formData.append("originalPrice", courseData.originalPrice);
-    if (courseData.discountPrice)
-      formData.append("discountPrice", courseData.discountPrice);
-    if (courseData.courseType)
-      formData.append("courseType", courseData.courseType);
-    if (courseData.startDate)
-      formData.append("startDate", courseData.startDate);
-    if (courseData.pricingNote)
-      formData.append("pricingNote", courseData.pricingNote);
-    if (courseData.shortDescription)
-      formData.append("shortDescription", courseData.shortDescription);
-    if (courseData.detailedDescription)
-      formData.append("detailedDescription", courseData.detailedDescription);
-    if (courseData.accessType)
-      formData.append("accessType", courseData.accessType);
-    formData.append(
+    // 1. Basic Fields
+    const basicFields = [
+      "contentType",
+      "name",
+      "originalPrice",
+      "discountPrice",
+      "discountPercent",
+      "courseType",
+      "startDate",
+      "pricingNote",
+      "shortDescription",
+      "detailedDescription",
+      "accessType",
       "isActive",
-      courseData.isActive !== undefined ? courseData.isActive : true,
-    );
+    ];
 
-    // Array fields as JSON strings
-    formData.append(
+    basicFields.forEach((field) => {
+      if (courseData[field] !== undefined && courseData[field] !== null) {
+        formData.append(field, courseData[field]);
+      }
+    });
+
+    // 2. Simple Arrays (Must be JSON strings for Backend JSON.parse)
+    const arrayFields = [
       "categoryIds",
-      JSON.stringify(courseData.categoryIds || []),
-    );
-    formData.append(
       "subCategoryIds",
-      JSON.stringify(courseData.subCategoryIds || []),
-    );
-    formData.append(
       "languageIds",
-      JSON.stringify(courseData.languageIds || []),
-    );
-    formData.append(
       "validityIds",
-      JSON.stringify(courseData.validityIds || []),
-    );
+    ];
+    arrayFields.forEach((field) => {
+      if (courseData[field]) {
+        formData.append(field, JSON.stringify(courseData[field]));
+      }
+    });
 
-    // Tutors (without photos)
+    // 3. Complex Arrays (Metadata as JSON strings)
+    // Tutors
     const tutorsData = (courseData.tutors || []).map((t) => ({
       name: t.name,
       subject: t.subject,
@@ -66,7 +66,7 @@ const courseService = {
     }));
     formData.append("tutors", JSON.stringify(tutorsData));
 
-    // Classes (without media)
+    // Classes
     const classesData = (courseData.classes || []).map((c) => ({
       title: c.title,
       topic: c.topic,
@@ -75,39 +75,45 @@ const courseService = {
     }));
     formData.append("classes", JSON.stringify(classesData));
 
-    // Study materials (without files)
+    // Study Materials
     const materialsData = (courseData.studyMaterials || []).map((m) => ({
       title: m.title,
       description: m.description,
     }));
     formData.append("studyMaterials", JSON.stringify(materialsData));
 
-    // Main thumbnail
-    if (courseData.thumbnail) {
+    // 4. File Uploads
+
+    // Main Thumbnail
+    if (courseData.thumbnail instanceof File) {
       formData.append("thumbnail", courseData.thumbnail);
     }
 
-    // Tutor images (must match order of tutors array)
-    (courseData.tutors || []).forEach((tutor) => {
-      if (tutor.photo) {
-        formData.append("tutorImages", tutor.photo);
-      }
-    });
+    // Tutor Images
+    if (courseData.tutors) {
+      courseData.tutors.forEach((t) => {
+        if (t.photo instanceof File) formData.append("tutorImages", t.photo);
+      });
+    }
 
-    // Class media (must match order of classes array)
-    (courseData.classes || []).forEach((cls) => {
-      if (cls.video) formData.append("classVideos", cls.video);
-      if (cls.thumbnail) formData.append("classThumbnails", cls.thumbnail);
-      if (cls.lecturePhoto)
-        formData.append("classLecturePics", cls.lecturePhoto);
-    });
+    // Class Media
+    if (courseData.classes) {
+      courseData.classes.forEach((c) => {
+        if (c.thumbnail instanceof File)
+          formData.append("classThumbnails", c.thumbnail);
+        if (c.lecturePhoto instanceof File)
+          formData.append("classLecturePics", c.lecturePhoto);
+        if (c.video instanceof File) formData.append("classVideos", c.video);
+      });
+    }
 
-    // Study material files (must match order of studyMaterials array)
-    (courseData.studyMaterials || []).forEach((material) => {
-      if (material.file) {
-        formData.append("studyMaterialFiles", material.file);
-      }
-    });
+    // Study Material Files
+    if (courseData.studyMaterials) {
+      courseData.studyMaterials.forEach((m) => {
+        if (m.file instanceof File)
+          formData.append("studyMaterialFiles", m.file);
+      });
+    }
 
     const response = await axiosInstance.post("/admin/courses/full", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -115,105 +121,91 @@ const courseService = {
     return response.data;
   },
 
-  // Update course (all-in-one)
+  // ==========================================
+  // 3. UPDATE COURSE (Matches Backend: updateCourse)
+  // ==========================================
   update: async (id, courseData) => {
+    console.log("🚀 Service: update called for ID:", id);
     const formData = new FormData();
 
-    // Basic fields
-    if (courseData.contentType)
-      formData.append("contentType", courseData.contentType);
-    if (courseData.accessType)
-      formData.append("accessType", courseData.accessType);
-    if (courseData.name) formData.append("name", courseData.name);
-    if (courseData.originalPrice !== undefined)
-      formData.append("originalPrice", courseData.originalPrice);
-    if (courseData.discountPrice !== undefined)
-      formData.append("discountPrice", courseData.discountPrice);
-    if (courseData.courseType)
-      formData.append("courseType", courseData.courseType);
-    if (courseData.startDate)
-      formData.append("startDate", courseData.startDate);
-    if (courseData.pricingNote)
-      formData.append("pricingNote", courseData.pricingNote);
-    if (courseData.shortDescription)
-      formData.append("shortDescription", courseData.shortDescription);
-    if (courseData.detailedDescription)
-      formData.append("detailedDescription", courseData.detailedDescription);
-    if (courseData.isActive !== undefined)
-      formData.append("isActive", courseData.isActive);
+    // 1. Construct the Clean JSON Object
+    // We send this as a single 'course' string. The backend checks `if (req.body.course)`
+    // and parses it. This prevents the 500 error regarding array/string mismatches.
+    const payload = {
+      contentType: courseData.contentType,
+      name: courseData.name,
+      courseType: courseData.courseType,
+      startDate: courseData.startDate,
+      originalPrice: courseData.originalPrice,
+      discountPrice: courseData.discountPrice,
+      discountPercent: courseData.discountPercent,
+      pricingNote: courseData.pricingNote,
+      shortDescription: courseData.shortDescription,
+      detailedDescription: courseData.detailedDescription,
+      isActive: courseData.isActive,
+      accessType: courseData.accessType,
 
-    // Array fields
-    if (courseData.categoryIds)
-      formData.append("categoryIds", JSON.stringify(courseData.categoryIds));
-    if (courseData.subCategoryIds)
-      formData.append(
-        "subCategoryIds",
-        JSON.stringify(courseData.subCategoryIds),
-      );
-    if (courseData.languageIds)
-      formData.append("languageIds", JSON.stringify(courseData.languageIds));
-    if (courseData.validityIds)
-      formData.append("validityIds", JSON.stringify(courseData.validityIds));
+      // IDs
+      categoryIds: courseData.categoryIds || [],
+      subCategoryIds: courseData.subCategoryIds || [],
+      languageIds: courseData.languageIds || [],
+      validityIds: courseData.validityIds || [],
 
-    // Tutors
-    if (courseData.tutors) {
-      const tutorsData = courseData.tutors.map((t) => ({
+      // Nested Objects (Include _id to ensure updates instead of creates)
+      tutors: (courseData.tutors || []).map((t) => ({
+        _id: t._id,
         name: t.name,
         subject: t.subject,
         qualification: t.qualification,
-        photoUrl: t.photoUrl, // Keep existing URL if not changing
-      }));
-      formData.append("tutors", JSON.stringify(tutorsData));
-
-      courseData.tutors.forEach((tutor) => {
-        if (tutor.photo instanceof File) {
-          formData.append("tutorImages", tutor.photo);
-        }
-      });
-    }
-
-    // Classes
-    if (courseData.classes) {
-      const classesData = courseData.classes.map((c) => ({
+        photoUrl: t.photoUrl,
+      })),
+      classes: (courseData.classes || []).map((c) => ({
+        _id: c._id,
         title: c.title,
         topic: c.topic,
         order: c.order,
         isFree: c.isFree,
-        thumbnailUrl: c.thumbnailUrl, // Keep existing URLs
+        thumbnailUrl: c.thumbnailUrl,
         lecturePhotoUrl: c.lecturePhotoUrl,
         videoUrl: c.videoUrl,
-      }));
-      formData.append("classes", JSON.stringify(classesData));
-
-      courseData.classes.forEach((cls) => {
-        if (cls.video instanceof File)
-          formData.append("classVideos", cls.video);
-        if (cls.thumbnail instanceof File)
-          formData.append("classThumbnails", cls.thumbnail);
-        if (cls.lecturePhoto instanceof File)
-          formData.append("classLecturePics", cls.lecturePhoto);
-      });
-    }
-
-    // Study materials
-    if (courseData.studyMaterials) {
-      const materialsData = courseData.studyMaterials.map((m) => ({
+      })),
+      studyMaterials: (courseData.studyMaterials || []).map((m) => ({
+        _id: m._id,
         title: m.title,
         description: m.description,
-        fileUrl: m.fileUrl, // Keep existing URL
-      }));
-      formData.append("studyMaterials", JSON.stringify(materialsData));
+        fileUrl: m.fileUrl,
+      })),
+    };
 
-      courseData.studyMaterials.forEach((material) => {
-        if (material.file instanceof File) {
-          formData.append("studyMaterialFiles", material.file);
-        }
+    // Append the JSON payload
+    formData.append("course", JSON.stringify(payload));
+
+    // 2. Append Files (Standard Multer handling)
+    if (courseData.thumbnail instanceof File) {
+      formData.append("thumbnail", courseData.thumbnail);
+    }
+
+    if (courseData.tutors) {
+      courseData.tutors.forEach((t) => {
+        if (t.photo instanceof File) formData.append("tutorImages", t.photo);
       });
     }
 
-    // Thumbnail
-    if (courseData.thumbnail instanceof File) {
-      formData.append("thumbnail", courseData.thumbnail);
+    if (courseData.classes) {
+      courseData.classes.forEach((c) => {
+        if (c.thumbnail instanceof File)
+          formData.append("classThumbnails", c.thumbnail);
+        if (c.lecturePhoto instanceof File)
+          formData.append("classLecturePics", c.lecturePhoto);
+        if (c.video instanceof File) formData.append("classVideos", c.video);
+      });
+    }
+
+    if (courseData.studyMaterials) {
+      courseData.studyMaterials.forEach((m) => {
+        if (m.file instanceof File)
+          formData.append("studyMaterialFiles", m.file);
+      });
     }
 
     const response = await axiosInstance.patch(
@@ -226,13 +218,15 @@ const courseService = {
     return response.data;
   },
 
-  // Delete course
+  // ==========================================
+  // 4. UTILS & STATUS
+  // ==========================================
+
   delete: async (id) => {
     const response = await axiosInstance.delete(`/admin/courses/${id}`);
     return response.data;
   },
 
-  // Publish/Unpublish
   publish: async (id) => {
     const response = await axiosInstance.patch(`/admin/courses/${id}/publish`);
     return response.data;
@@ -245,7 +239,10 @@ const courseService = {
     return response.data;
   },
 
-  // Create course shell (Step 1: Draft creation)
+  // ==========================================
+  // 5. SUB-ENTITY HELPERS (If used individually)
+  // ==========================================
+
   createCourseShell: async (data) => {
     const formData = new FormData();
     if (data.contentType) formData.append("contentType", data.contentType);
@@ -254,14 +251,14 @@ const courseService = {
       formData.append("categoryIds", JSON.stringify(data.categoryIds));
     if (data.subCategoryIds)
       formData.append("subCategoryIds", JSON.stringify(data.subCategoryIds));
-
+    if (data.thumbnail instanceof File)
+      formData.append("thumbnail", data.thumbnail);
     const response = await axiosInstance.post("/admin/courses", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   },
 
-  // Update course shell (contentType, categories, subcategories, date)
   updateCourseShell: async (id, data) => {
     const formData = new FormData();
     if (data.contentType) formData.append("contentType", data.contentType);
@@ -270,66 +267,51 @@ const courseService = {
       formData.append("categoryIds", JSON.stringify(data.categoryIds));
     if (data.subCategoryIds)
       formData.append("subCategoryIds", JSON.stringify(data.subCategoryIds));
-
-    const response = await axiosInstance.put(`/admin/courses/${id}`, formData);
+    const response = await axiosInstance.put(`/admin/courses/${id}`, formData); // backend uses upload.none()
     return response.data;
   },
 
-  // Update course basics (Step 2: name, pricing, languages, validity, thumbnail)
   updateCourseBasic: async (id, data) => {
     const formData = new FormData();
-    if (data.name) formData.append("name", data.name);
-    if (data.courseType) formData.append("courseType", data.courseType);
+    const fields = ["name", "courseType", "originalPrice", "discountPrice"];
+    fields.forEach((k) => {
+      if (data[k] !== undefined) formData.append(k, data[k]);
+    });
     if (data.languageIds)
       formData.append("languageIds", JSON.stringify(data.languageIds));
     if (data.validityIds)
       formData.append("validityIds", JSON.stringify(data.validityIds));
-    if (data.originalPrice !== undefined)
-      formData.append("originalPrice", data.originalPrice);
-    if (data.discountPrice !== undefined)
-      formData.append("discountPrice", data.discountPrice);
-    if (data.thumbnail) formData.append("thumbnail", data.thumbnail);
-
+    if (data.thumbnail instanceof File)
+      formData.append("thumbnail", data.thumbnail);
     const response = await axiosInstance.put(
       `/admin/courses/${id}/basics`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
 
-  // Update course content (Step 3: descriptions, study materials)
   updateCourseContent: async (id, data) => {
     const formData = new FormData();
-    if (data.shortDescription)
-      formData.append("shortDescription", data.shortDescription);
-    if (data.detailedDescription)
-      formData.append("detailedDescription", data.detailedDescription);
-    if (data.pricingNote) formData.append("pricingNote", data.pricingNote);
+    ["shortDescription", "detailedDescription", "pricingNote"].forEach((k) => {
+      if (data[k]) formData.append(k, data[k]);
+    });
     if (data.studyMaterials)
       formData.append("studyMaterials", JSON.stringify(data.studyMaterials));
-
-    // Append study material files
-    if (data.studyMaterialFiles && Array.isArray(data.studyMaterialFiles)) {
-      data.studyMaterialFiles.forEach((file) => {
-        formData.append("studyMaterialFiles", file);
+    if (data.studyMaterialFiles) {
+      data.studyMaterialFiles.forEach((f) => {
+        if (f instanceof File) formData.append("studyMaterialFiles", f);
       });
     }
-
     const response = await axiosInstance.put(
       `/admin/courses/${id}/content`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
 
-  // Update course descriptions only
-  updateCourseDescriptions: async (id, data) => {
+  updateDescriptions: async (id, data) => {
     const response = await axiosInstance.put(
       `/admin/courses/${id}/descriptions`,
       data,
@@ -337,142 +319,92 @@ const courseService = {
     return response.data;
   },
 
-  // Delete study material
-  deleteStudyMaterial: async (courseId, materialId) => {
-    const response = await axiosInstance.delete(
-      `/admin/courses/${courseId}/study-materials/${materialId}`,
-    );
-    return response.data;
-  },
-
-  // Add tutors to course
-  addTutors: async (id, tutors, tutorImages) => {
+  // Tutors
+  addTutors: async (id, tutors, tutorImages = []) => {
     const formData = new FormData();
     formData.append("tutors", JSON.stringify(tutors));
-
-    // Append tutor images (must match tutors array order)
-    if (tutorImages && Array.isArray(tutorImages)) {
-      tutorImages.forEach((image) => {
-        if (image) formData.append("tutorImages", image);
-      });
-    }
-
+    tutorImages.forEach((f) => {
+      if (f instanceof File) formData.append("tutorImages", f);
+    });
     const response = await axiosInstance.post(
       `/admin/courses/${id}/tutors`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
-
-  // Update single tutor
-  updateTutor: async (courseId, tutorId, data) => {
+  updateTutor: async (cId, tId, data) => {
     const formData = new FormData();
-    if (data.name) formData.append("name", data.name);
-    if (data.qualification)
-      formData.append("qualification", data.qualification);
-    if (data.subject) formData.append("subject", data.subject);
-    if (data.photo) formData.append("tutorImage", data.photo);
-
+    ["name", "qualification", "subject"].forEach((k) => {
+      if (data[k]) formData.append(k, data[k]);
+    });
+    if (data.photo instanceof File) formData.append("tutorImage", data.photo);
     const response = await axiosInstance.put(
-      `/admin/courses/${courseId}/tutors/${tutorId}`,
+      `/admin/courses/${cId}/tutors/${tId}`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
+  deleteTutor: async (cId, tId) =>
+    (await axiosInstance.delete(`/admin/courses/${cId}/tutors/${tId}`)).data,
 
-  // Delete tutor
-  deleteTutor: async (courseId, tutorId) => {
-    const response = await axiosInstance.delete(
-      `/admin/courses/${courseId}/tutors/${tutorId}`,
-    );
-    return response.data;
-  },
-
-  // Add classes to course
-  addClassesToCourse: async (id, classes, classMedia) => {
+  // Classes
+  addClasses: async (id, classes, classMedia = {}) => {
     const formData = new FormData();
     formData.append("classes", JSON.stringify(classes));
-
-    // Append class media (must match classes array order)
-    if (classMedia) {
-      if (classMedia.thumbnails && Array.isArray(classMedia.thumbnails)) {
-        classMedia.thumbnails.forEach((file) => {
-          if (file) formData.append("classThumbnails", file);
-        });
-      }
-      if (classMedia.lecturePics && Array.isArray(classMedia.lecturePics)) {
-        classMedia.lecturePics.forEach((file) => {
-          if (file) formData.append("classLecturePics", file);
-        });
-      }
-      if (classMedia.videos && Array.isArray(classMedia.videos)) {
-        classMedia.videos.forEach((file) => {
-          if (file) formData.append("classVideos", file);
-        });
-      }
-    }
-
+    if (classMedia.thumbnails)
+      classMedia.thumbnails.forEach((f) =>
+        formData.append("classThumbnails", f),
+      );
+    if (classMedia.lecturePics)
+      classMedia.lecturePics.forEach((f) =>
+        formData.append("classLecturePics", f),
+      );
+    if (classMedia.videos)
+      classMedia.videos.forEach((f) => formData.append("classVideos", f));
     const response = await axiosInstance.post(
       `/admin/courses/${id}/classes`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
-
-  // Update single class
-  updateClass: async (courseId, classId, data) => {
+  updateClass: async (cId, classId, data) => {
     const formData = new FormData();
-    if (data.title) formData.append("title", data.title);
-    if (data.topic) formData.append("topic", data.topic);
-    if (data.order !== undefined) formData.append("order", data.order);
-    if (data.isFree !== undefined) formData.append("isFree", data.isFree);
-    if (data.thumbnail) formData.append("thumbnail", data.thumbnail);
-    if (data.lecturePhoto) formData.append("lecturePhoto", data.lecturePhoto);
-    if (data.video) formData.append("video", data.video);
-
+    ["title", "topic", "order", "isFree"].forEach((k) => {
+      if (data[k] !== undefined) formData.append(k, data[k]);
+    });
+    if (data.thumbnail instanceof File)
+      formData.append("classThumbnail", data.thumbnail);
+    if (data.lecturePhoto instanceof File)
+      formData.append("classLecturePic", data.lecturePhoto);
+    if (data.video instanceof File) formData.append("classVideo", data.video);
     const response = await axiosInstance.put(
-      `/admin/courses/${courseId}/classes/${classId}`,
+      `/admin/courses/${cId}/classes/${classId}`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
-
-  // Delete class
-  deleteClass: async (courseId, classId) => {
-    const response = await axiosInstance.delete(
-      `/admin/courses/${courseId}/classes/${classId}`,
-    );
-    return response.data;
-  },
-
-  // Upload class media (alternative endpoint for media only)
-  uploadClassMedia: async (courseId, classId, files) => {
+  deleteClass: async (cId, classId) =>
+    (await axiosInstance.delete(`/admin/courses/${cId}/classes/${classId}`))
+      .data,
+  uploadClassMedia: async (cId, classId, files) => {
     const formData = new FormData();
     if (files.thumbnail) formData.append("thumbnail", files.thumbnail);
     if (files.lecturePhoto) formData.append("lecturePhoto", files.lecturePhoto);
     if (files.video) formData.append("video", files.video);
-
     const response = await axiosInstance.put(
-      `/admin/courses/${courseId}/classes/${classId}/media`,
+      `/admin/courses/${cId}/classes/${classId}/media`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
+  deleteStudyMaterial: async (cId, mId) =>
+    (await axiosInstance.delete(`/admin/courses/${cId}/study-materials/${mId}`))
+      .data,
 };
 
 export default courseService;

@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import courseService from "../../api/courseService";
 
-// Async thunks
+// --- Async Thunks ---
+
 export const fetchCourses = createAsyncThunk(
   "courses/fetchAll",
   async (params, { rejectWithValue }) => {
@@ -28,6 +29,7 @@ export const fetchCourseById = createAsyncThunk(
   },
 );
 
+// Full Course Creation
 export const createCourse = createAsyncThunk(
   "courses/create",
   async (courseData, { rejectWithValue }) => {
@@ -41,6 +43,7 @@ export const createCourse = createAsyncThunk(
   },
 );
 
+// Full Update
 export const updateCourse = createAsyncThunk(
   "courses/update",
   async ({ id, courseData }, { rejectWithValue }) => {
@@ -54,6 +57,47 @@ export const updateCourse = createAsyncThunk(
   },
 );
 
+// Partial Updates (For Step-by-Step UI)
+export const updateCourseBasic = createAsyncThunk(
+  "courses/updateBasic",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await courseService.updateCourseBasic(id, data);
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update course basics",
+      );
+    }
+  },
+);
+
+export const updateCourseContent = createAsyncThunk(
+  "courses/updateContent",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await courseService.updateCourseContent(id, data);
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update course content",
+      );
+    }
+  },
+);
+
+export const updateCourseDescriptions = createAsyncThunk(
+  "courses/updateDescriptions",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      return await courseService.updateDescriptions(id, data);
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update descriptions",
+      );
+    }
+  },
+);
+
+// Delete
 export const deleteCourse = createAsyncThunk(
   "courses/delete",
   async (id, { rejectWithValue }) => {
@@ -68,6 +112,7 @@ export const deleteCourse = createAsyncThunk(
   },
 );
 
+// Status
 export const publishCourse = createAsyncThunk(
   "courses/publish",
   async (id, { rejectWithValue }) => {
@@ -94,77 +139,8 @@ export const unpublishCourse = createAsyncThunk(
   },
 );
 
-// Create course shell (draft)
-export const createCourseShell = createAsyncThunk(
-  "courses/createShell",
-  async (data, { rejectWithValue }) => {
-    try {
-      return await courseService.createCourseShell(data);
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to create course shell",
-      );
-    }
-  },
-);
+// --- Sub-Entity Operations ---
 
-// Update course shell
-export const updateCourseShell = createAsyncThunk(
-  "courses/updateShell",
-  async ({ id, data }, { rejectWithValue }) => {
-    try {
-      return await courseService.updateCourseShell(id, data);
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update course shell",
-      );
-    }
-  },
-);
-
-// Update course basics
-export const updateCourseBasic = createAsyncThunk(
-  "courses/updateBasic",
-  async ({ id, data }, { rejectWithValue }) => {
-    try {
-      return await courseService.updateCourseBasic(id, data);
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update course basics",
-      );
-    }
-  },
-);
-
-// Update course content
-export const updateCourseContent = createAsyncThunk(
-  "courses/updateContent",
-  async ({ id, data }, { rejectWithValue }) => {
-    try {
-      return await courseService.updateCourseContent(id, data);
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update course content",
-      );
-    }
-  },
-);
-
-// Update course descriptions
-export const updateCourseDescriptions = createAsyncThunk(
-  "courses/updateDescriptions",
-  async ({ id, data }, { rejectWithValue }) => {
-    try {
-      return await courseService.updateCourseDescriptions(id, data);
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update descriptions",
-      );
-    }
-  },
-);
-
-// Delete study material
 export const deleteStudyMaterial = createAsyncThunk(
   "courses/deleteStudyMaterial",
   async ({ courseId, materialId }, { rejectWithValue }) => {
@@ -178,7 +154,6 @@ export const deleteStudyMaterial = createAsyncThunk(
   },
 );
 
-// Add tutors
 export const addTutors = createAsyncThunk(
   "courses/addTutors",
   async ({ id, tutors, tutorImages }, { rejectWithValue }) => {
@@ -192,7 +167,6 @@ export const addTutors = createAsyncThunk(
   },
 );
 
-// Update tutor
 export const updateTutor = createAsyncThunk(
   "courses/updateTutor",
   async ({ courseId, tutorId, data }, { rejectWithValue }) => {
@@ -206,7 +180,6 @@ export const updateTutor = createAsyncThunk(
   },
 );
 
-// Delete tutor
 export const deleteTutor = createAsyncThunk(
   "courses/deleteTutor",
   async ({ courseId, tutorId }, { rejectWithValue }) => {
@@ -220,12 +193,11 @@ export const deleteTutor = createAsyncThunk(
   },
 );
 
-// Add classes to course
 export const addClassesToCourse = createAsyncThunk(
   "courses/addClasses",
   async ({ id, classes, classMedia }, { rejectWithValue }) => {
     try {
-      return await courseService.addClassesToCourse(id, classes, classMedia);
+      return await courseService.addClasses(id, classes, classMedia);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to add classes",
@@ -234,7 +206,6 @@ export const addClassesToCourse = createAsyncThunk(
   },
 );
 
-// Update class
 export const updateClass = createAsyncThunk(
   "courses/updateClass",
   async ({ courseId, classId, data }, { rejectWithValue }) => {
@@ -248,7 +219,6 @@ export const updateClass = createAsyncThunk(
   },
 );
 
-// Delete class
 export const deleteClass = createAsyncThunk(
   "courses/deleteClass",
   async ({ courseId, classId }, { rejectWithValue }) => {
@@ -262,7 +232,6 @@ export const deleteClass = createAsyncThunk(
   },
 );
 
-// Upload class media
 export const uploadClassMedia = createAsyncThunk(
   "courses/uploadClassMedia",
   async ({ courseId, classId, files }, { rejectWithValue }) => {
@@ -276,6 +245,8 @@ export const uploadClassMedia = createAsyncThunk(
   },
 );
 
+// --- Slice ---
+
 const courseSlice = createSlice({
   name: "courses",
   initialState: {
@@ -283,9 +254,6 @@ const courseSlice = createSlice({
     selectedCourse: null,
     loading: false,
     error: null,
-    totalCourses: 0,
-    totalPages: 0,
-    currentPage: 1,
   },
   reducers: {
     clearError: (state) => {
@@ -296,398 +264,153 @@ const courseSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Helper to handle loading/error for typical actions
+    const handlePending = (state) => {
+      state.loading = true;
+      state.error = null;
+    };
+    const handleRejected = (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    };
+    const handleFulfilledUpdate = (state, action) => {
+      state.loading = false;
+      const updatedCourse = action.payload.data || action.payload;
+
+      // Update in list
+      const index = state.courses.findIndex((c) => c._id === updatedCourse._id);
+      if (index !== -1) {
+        state.courses[index] = { ...state.courses[index], ...updatedCourse };
+      }
+
+      // Update selected if matching
+      if (
+        state.selectedCourse &&
+        state.selectedCourse._id === updatedCourse._id
+      ) {
+        state.selectedCourse = { ...state.selectedCourse, ...updatedCourse };
+      }
+    };
+
     builder
-      // Fetch Courses
-      .addCase(fetchCourses.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // Fetch All
+      .addCase(fetchCourses.pending, handlePending)
       .addCase(fetchCourses.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload.data && Array.isArray(action.payload.data)) {
-          state.courses = action.payload.data;
-        } else if (Array.isArray(action.payload)) {
-          state.courses = action.payload;
-        }
+        state.courses = action.payload.data || action.payload || [];
       })
-      .addCase(fetchCourses.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(fetchCourses.rejected, handleRejected)
 
-      // Fetch Course By ID
-      .addCase(fetchCourseById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // Fetch One
+      .addCase(fetchCourseById.pending, handlePending)
       .addCase(fetchCourseById.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedCourse = action.payload.data;
+        state.selectedCourse = action.payload.data || action.payload;
       })
-      .addCase(fetchCourseById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(fetchCourseById.rejected, handleRejected)
 
-      // Create Course
-      .addCase(createCourse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // Create
+      .addCase(createCourse.pending, handlePending)
       .addCase(createCourse.fulfilled, (state, action) => {
         state.loading = false;
         const newCourse = action.payload.data || action.payload;
         state.courses.unshift(newCourse);
       })
-      .addCase(createCourse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(createCourse.rejected, handleRejected)
 
-      // Update Course
-      .addCase(updateCourse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCourse.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(updateCourse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      // All Updates (Full, Basic, Content, Descriptions)
+      .addCase(updateCourse.pending, handlePending)
+      .addCase(updateCourse.fulfilled, handleFulfilledUpdate)
+      .addCase(updateCourse.rejected, handleRejected)
 
-      // Delete Course
-      .addCase(deleteCourse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(updateCourseBasic.pending, handlePending)
+      .addCase(updateCourseBasic.fulfilled, handleFulfilledUpdate)
+      .addCase(updateCourseBasic.rejected, handleRejected)
+
+      .addCase(updateCourseContent.pending, handlePending)
+      .addCase(updateCourseContent.fulfilled, handleFulfilledUpdate)
+      .addCase(updateCourseContent.rejected, handleRejected)
+
+      .addCase(updateCourseDescriptions.pending, handlePending)
+      .addCase(updateCourseDescriptions.fulfilled, handleFulfilledUpdate)
+      .addCase(updateCourseDescriptions.rejected, handleRejected)
+
+      // Delete
+      .addCase(deleteCourse.pending, handlePending)
       .addCase(deleteCourse.fulfilled, (state, action) => {
         state.loading = false;
         state.courses = state.courses.filter((c) => c._id !== action.payload);
+        if (
+          state.selectedCourse &&
+          state.selectedCourse._id === action.payload
+        ) {
+          state.selectedCourse = null;
+        }
       })
-      .addCase(deleteCourse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(deleteCourse.rejected, handleRejected)
 
-      // Publish Course
-      .addCase(publishCourse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // Status Changes
+      .addCase(publishCourse.pending, handlePending)
       .addCase(publishCourse.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle both response formats: { data: course } or direct course object
-        const publishedCourse = action.payload?.data || action.payload;
-        if (publishedCourse && publishedCourse._id) {
-          const index = state.courses.findIndex(
-            (c) => c._id === publishedCourse._id,
-          );
-          if (index !== -1) {
-            // Update the course in the array with the new data
-            state.courses[index] = {
-              ...state.courses[index],
-              ...publishedCourse,
-              isActive: true, // Ensure isActive is set to true
-            };
-          }
+        const updated = action.payload.data || action.payload;
+        const index = state.courses.findIndex((c) => c._id === updated._id);
+        if (index !== -1) {
+          state.courses[index] = { ...state.courses[index], isActive: true };
+        }
+        if (state.selectedCourse?._id === updated._id) {
+          state.selectedCourse.isActive = true;
         }
       })
-      .addCase(publishCourse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to publish course";
-      })
+      .addCase(publishCourse.rejected, handleRejected)
 
-      // Unpublish Course
-      .addCase(unpublishCourse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(unpublishCourse.pending, handlePending)
       .addCase(unpublishCourse.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle both response formats: { data: course } or direct course object
-        const unpublishedCourse = action.payload?.data || action.payload;
-        if (unpublishedCourse && unpublishedCourse._id) {
-          const index = state.courses.findIndex(
-            (c) => c._id === unpublishedCourse._id,
-          );
-          if (index !== -1) {
-            // Update the course in the array with the new data
-            state.courses[index] = {
-              ...state.courses[index],
-              ...unpublishedCourse,
-              isActive: false, // Ensure isActive is set to false
-            };
-          }
-        }
-      })
-      .addCase(unpublishCourse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to unpublish course";
-      })
-
-      // Create Course Shell
-      .addCase(createCourseShell.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createCourseShell.fulfilled, (state, action) => {
-        state.loading = false;
-        const newCourse = action.payload.data || action.payload;
-        state.courses.unshift(newCourse);
-      })
-      .addCase(createCourseShell.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Update Course Shell
-      .addCase(updateCourseShell.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCourseShell.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
+        const updated = action.payload.data || action.payload;
+        const index = state.courses.findIndex((c) => c._id === updated._id);
         if (index !== -1) {
-          state.courses[index] = updatedCourse;
+          state.courses[index] = { ...state.courses[index], isActive: false };
+        }
+        if (state.selectedCourse?._id === updated._id) {
+          state.selectedCourse.isActive = false;
         }
       })
-      .addCase(updateCourseShell.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(unpublishCourse.rejected, handleRejected)
 
-      // Update Course Basic
-      .addCase(updateCourseBasic.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCourseBasic.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(updateCourseBasic.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      // Sub-Entity Updates (Tutors, Classes, Materials)
+      // These all return the full course object, so we can reuse handleFulfilledUpdate
+      .addCase(addTutors.pending, handlePending)
+      .addCase(addTutors.fulfilled, handleFulfilledUpdate)
+      .addCase(addTutors.rejected, handleRejected)
 
-      // Update Course Content
-      .addCase(updateCourseContent.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCourseContent.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(updateCourseContent.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(updateTutor.pending, handlePending)
+      .addCase(updateTutor.fulfilled, handleFulfilledUpdate)
+      .addCase(updateTutor.rejected, handleRejected)
 
-      // Update Course Descriptions
-      .addCase(updateCourseDescriptions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCourseDescriptions.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(updateCourseDescriptions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(deleteTutor.pending, handlePending)
+      .addCase(deleteTutor.fulfilled, handleFulfilledUpdate)
+      .addCase(deleteTutor.rejected, handleRejected)
 
-      // Delete Study Material
-      .addCase(deleteStudyMaterial.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteStudyMaterial.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(deleteStudyMaterial.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(addClassesToCourse.pending, handlePending)
+      .addCase(addClassesToCourse.fulfilled, handleFulfilledUpdate)
+      .addCase(addClassesToCourse.rejected, handleRejected)
 
-      // Add Tutors
-      .addCase(addTutors.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addTutors.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(addTutors.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(updateClass.pending, handlePending)
+      .addCase(updateClass.fulfilled, handleFulfilledUpdate)
+      .addCase(updateClass.rejected, handleRejected)
 
-      // Update Tutor
-      .addCase(updateTutor.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateTutor.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(updateTutor.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(deleteClass.pending, handlePending)
+      .addCase(deleteClass.fulfilled, handleFulfilledUpdate)
+      .addCase(deleteClass.rejected, handleRejected)
 
-      // Delete Tutor
-      .addCase(deleteTutor.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteTutor.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(deleteTutor.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(uploadClassMedia.pending, handlePending)
+      .addCase(uploadClassMedia.fulfilled, handleFulfilledUpdate)
+      .addCase(uploadClassMedia.rejected, handleRejected)
 
-      // Add Classes to Course
-      .addCase(addClassesToCourse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addClassesToCourse.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(addClassesToCourse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Update Class
-      .addCase(updateClass.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateClass.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(updateClass.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Delete Class
-      .addCase(deleteClass.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteClass.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(deleteClass.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Upload Class Media
-      .addCase(uploadClassMedia.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(uploadClassMedia.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCourse = action.payload.data || action.payload;
-        const index = state.courses.findIndex(
-          (c) => c._id === updatedCourse._id,
-        );
-        if (index !== -1) {
-          state.courses[index] = updatedCourse;
-        }
-      })
-      .addCase(uploadClassMedia.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(deleteStudyMaterial.pending, handlePending)
+      .addCase(deleteStudyMaterial.fulfilled, handleFulfilledUpdate)
+      .addCase(deleteStudyMaterial.rejected, handleRejected);
   },
 });
 

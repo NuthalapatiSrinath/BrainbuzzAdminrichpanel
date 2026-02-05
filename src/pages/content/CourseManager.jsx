@@ -10,14 +10,10 @@ import {
   ChevronRight,
   FolderTree,
   Video,
-  FileText,
   Users,
   CheckCircle,
-  XCircle,
   TrendingUp,
-  BarChart3,
   DollarSign,
-  Inbox,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -62,10 +58,6 @@ const CourseManager = () => {
   const { courses, loading: courseLoading } = useSelector(
     (state) => state.courses,
   );
-
-  // Local state for full course data with isActive field
-  const [fullCourses, setFullCourses] = useState([]);
-  const [isLoadingFullData, setIsLoadingFullData] = useState(false);
   const { categories, loading: catLoading } = useSelector(
     (state) => state.category,
   );
@@ -73,7 +65,11 @@ const CourseManager = () => {
     (state) => state.subCategory,
   );
 
-  // --- LOCAL STATE ---
+  // Local state for full course data (merged with details)
+  const [fullCourses, setFullCourses] = useState([]);
+  const [isHydrating, setIsHydrating] = useState(false);
+
+  // --- LOCAL UI STATE ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'course', 'category', 'subcategory'
   const [selectedItem, setSelectedItem] = useState(null);
@@ -81,127 +77,72 @@ const CourseManager = () => {
   const [expandedCategories, setExpandedCategories] = useState({});
   const [targetParentId, setTargetParentId] = useState(null);
 
-  // --- 🔥 FETCH DATA WITH API LOGGING ---
+  // --- 1. INITIAL FETCH ---
   useEffect(() => {
-    console.group("🎓 COURSE MANAGER - API Verification");
-    console.log("📘 Fetching Course-related APIs:");
-
-    console.log("  ✅ [1/3] GET /admin/courses - Fetching all courses");
-    dispatch(fetchCourses({ contentType: COURSE_CONTENT_TYPE }))
-      .then((result) => {
-        console.log("     ✓ Courses API completed");
-        if (result.payload?.data?.[0]) {
-          const sampleCourse = result.payload.data[0];
-          console.log(
-            "     📊 Sample Course Fields:",
-            Object.keys(sampleCourse),
-          );
-
-          // Check for critical fields
-          const criticalFields = [
-            "isActive",
-            "categories",
-            "classes",
-            "tutors",
-            "studyMaterials",
-          ];
-          const missingFields = criticalFields.filter(
-            (f) => !(f in sampleCourse),
-          );
-
-          if (missingFields.length > 0) {
-            console.warn(`     ⚠️ Backend getCourses returns SIMPLIFIED data`);
-            console.warn(`     Missing fields: ${missingFields.join(", ")}`);
-            console.warn(
-              `     💡 To fix: Backend needs to return FULL course objects for admin`,
-            );
-            console.warn(
-              `     📍 Location: backend/src/controllers/Admin/courseController.js lines 944-962`,
-            );
-          }
-        }
-      })
-      .catch((err) => console.error("     ✗ Courses API failed:", err));
-
-    console.log(
-      "  ✅ [2/3] GET /admin/categories - Fetching categories for ONLINE_COURSE",
-    );
-    dispatch(fetchCategories({ contentType: COURSE_CONTENT_TYPE }))
-      .then(() => console.log("     ✓ Categories API completed"))
-      .catch((err) => console.error("     ✗ Categories API failed:", err));
-
-    console.log(
-      "  ✅ [3/3] GET /admin/subcategories - Fetching subcategories for ONLINE_COURSE",
-    );
-    dispatch(fetchSubCategories({ contentType: COURSE_CONTENT_TYPE }))
-      .then(() => console.log("     ✓ SubCategories API completed"))
-      .catch((err) => console.error("     ✗ SubCategories API failed:", err));
-
-    console.groupEnd();
+    dispatch(fetchCourses({ contentType: COURSE_CONTENT_TYPE }));
+    dispatch(fetchCategories({ contentType: COURSE_CONTENT_TYPE }));
+    dispatch(fetchSubCategories({ contentType: COURSE_CONTENT_TYPE }));
   }, [dispatch]);
 
-  // --- 🔥 FETCH FULL COURSE DATA (including isActive field) ---
+  // --- 2. DATA HYDRATION (Fix for Backend missing fields in list API) ---
   useEffect(() => {
-    const fetchFullCourseData = async () => {
-      if (!courses || courses.length === 0) {
-        setFullCourses([]);
-        return;
-      }
+    if (!courses || courses.length === 0) {
+      setFullCourses([]);
+      return;
+    }
 
-      // Check if courses have isActive field
-      const firstCourse = courses[0];
-      if (typeof firstCourse.isActive !== "undefined") {
-        console.log("✅ Courses already have isActive field - using as is");
-        setFullCourses(courses);
-        return;
-      }
+    // Merge logic: If we already have a detailed object (with isActive), keep it.
+    // If Redux sends a new simple object, we replace it UNLESS we are currently hydrating.
+    setFullCourses((prevFull) => {
+      return courses.map((reduxCourse) => {
+        const existingDetail = prevFull.find((c) => c._id === reduxCourse._id);
+        return existingDetail && typeof existingDetail.isActive !== "undefined"
+          ? { ...existingDetail, ...reduxCourse }
+          : reduxCourse;
+      });
+    });
+  }, [courses]);
 
-      console.group("🔄 Fetching Full Course Details");
-      console.log(
-        "⚠️ Courses missing isActive field - fetching full data for each course",
+  // Fetch missing details (isActive) separately
+  useEffect(() => {
+    const fetchMissingDetails = async () => {
+      const coursesNeedingData = fullCourses.filter(
+        (c) => typeof c.isActive === "undefined",
       );
-      console.log(`📊 Fetching details for ${courses.length} courses...`);
 
-      setIsLoadingFullData(true);
+      if (coursesNeedingData.length > 0 && !isHydrating) {
+        setIsHydrating(true);
+        try {
+          const updatedData = [...fullCourses];
 
-      try {
-        const fullDataPromises = courses.map(async (course) => {
-          try {
-            console.log(`  → Fetching: ${course.name} (ID: ${course._id})`);
-            const result = await dispatch(fetchCourseById(course._id)).unwrap();
-            const fullCourse = result.data || result;
-            console.log(
-              `  ✓ Got full data for: ${course.name} - isActive: ${fullCourse.isActive}`,
-            );
-            return fullCourse;
-          } catch (error) {
-            console.error(`  ✗ Failed to fetch: ${course.name}`, error);
-            return course; // Fallback to simplified data
-          }
-        });
+          await Promise.all(
+            coursesNeedingData.map(async (course) => {
+              try {
+                const result = await dispatch(
+                  fetchCourseById(course._id),
+                ).unwrap();
+                const fullData = result.data || result;
 
-        const fullData = await Promise.all(fullDataPromises);
-        setFullCourses(fullData);
-
-        console.log("✅ All course details fetched successfully");
-        console.log(`📊 Status breakdown:`, {
-          active: fullData.filter((c) => c.isActive).length,
-          inactive: fullData.filter((c) => !c.isActive).length,
-          unknown: fullData.filter((c) => typeof c.isActive === "undefined")
-            .length,
-        });
-        console.groupEnd();
-      } catch (error) {
-        console.error("❌ Error fetching full course data:", error);
-        console.groupEnd();
-        setFullCourses(courses); // Fallback to simplified data
-      } finally {
-        setIsLoadingFullData(false);
+                const index = updatedData.findIndex(
+                  (c) => c._id === course._id,
+                );
+                if (index !== -1) updatedData[index] = fullData;
+              } catch (err) {
+                console.error(`Failed to hydrate ${course.name}`, err);
+              }
+            }),
+          );
+          setFullCourses(updatedData);
+        } catch (error) {
+          console.error("Hydration error", error);
+        } finally {
+          setIsHydrating(false);
+        }
       }
     };
 
-    fetchFullCourseData();
-  }, [courses, dispatch]);
+    if (fullCourses.length > 0) fetchMissingDetails();
+  }, [fullCourses, dispatch, isHydrating]);
 
   // --- HELPERS ---
   const toggleExpand = (catId) => {
@@ -220,63 +161,33 @@ const CourseManager = () => {
 
   // --- STATISTICS ---
   const statistics = useMemo(() => {
-    const coursesToUse = fullCourses.length > 0 ? fullCourses : courses || [];
-    if (coursesToUse.length === 0)
-      return {
-        totalCourses: 0,
-        activeCourses: 0,
-        totalClasses: 0,
-        totalRevenue: 0,
-      };
-
+    const data = fullCourses.length > 0 ? fullCourses : courses || [];
     return {
-      totalCourses: coursesToUse.length,
-      activeCourses: coursesToUse.filter((c) => c.isActive).length,
-      totalClasses: coursesToUse.reduce(
-        (sum, c) => sum + (c.classes?.length || 0),
-        0,
-      ),
-      totalRevenue: coursesToUse
+      totalCourses: data.length,
+      activeCourses: data.filter((c) => c.isActive).length,
+      totalClasses: data.reduce((sum, c) => sum + (c.classes?.length || 0), 0),
+      totalRevenue: data
         .filter((c) => c.accessType === "PAID")
         .reduce((sum, c) => sum + (c.discountPrice || c.originalPrice || 0), 0),
     };
-  }, [courses]);
+  }, [fullCourses, courses]);
 
-  // --- ENHANCED FILTERING (Search in courses, classes, and classifications) ---
+  // --- FILTERING ---
   const filteredCourses = useMemo(() => {
-    // Use fullCourses which has isActive field
-    const coursesToFilter = fullCourses.length > 0 ? fullCourses : courses;
-    if (!search) return coursesToFilter;
+    const data = fullCourses.length > 0 ? fullCourses : courses;
+    if (!search) return data;
     const s = search.toLowerCase();
-    return coursesToFilter.filter(
+    return data.filter(
       (c) =>
         c.name?.toLowerCase().includes(s) ||
-        c.description?.toLowerCase().includes(s) ||
-        c.shortDescription?.toLowerCase().includes(s) ||
-        c.detailedDescription?.toLowerCase().includes(s) ||
-        c.categories?.some((cat) => cat.name?.toLowerCase().includes(s)) ||
-        c.subCategories?.some((sub) => sub.name?.toLowerCase().includes(s)) ||
-        c.classes?.some(
-          (cls) =>
-            cls.title?.toLowerCase().includes(s) ||
-            cls.topic?.toLowerCase().includes(s),
-        ) ||
-        c.tutors?.some(
-          (tutor) =>
-            tutor.name?.toLowerCase().includes(s) ||
-            tutor.subject?.toLowerCase().includes(s),
-        ),
+        c.categories?.some((cat) => cat.name?.toLowerCase().includes(s)),
     );
   }, [fullCourses, courses, search]);
 
   const filteredCategories = useMemo(() => {
     if (!search) return categories;
     const s = search.toLowerCase();
-    return categories.filter(
-      (c) =>
-        c.name?.toLowerCase().includes(s) ||
-        c.description?.toLowerCase().includes(s),
-    );
+    return categories.filter((c) => c.name?.toLowerCase().includes(s));
   }, [categories, search]);
 
   const filteredSubCategories = useMemo(() => {
@@ -284,14 +195,10 @@ const CourseManager = () => {
     const s = search.toLowerCase();
     const filtered = {};
     Object.keys(groupedSubCategories).forEach((catId) => {
-      const matchingSubs = groupedSubCategories[catId].filter(
-        (sub) =>
-          sub.name?.toLowerCase().includes(s) ||
-          sub.description?.toLowerCase().includes(s),
+      const matchingSubs = groupedSubCategories[catId].filter((sub) =>
+        sub.name?.toLowerCase().includes(s),
       );
-      if (matchingSubs.length > 0) {
-        filtered[catId] = matchingSubs;
-      }
+      if (matchingSubs.length > 0) filtered[catId] = matchingSubs;
     });
     return filtered;
   }, [groupedSubCategories, search]);
@@ -311,189 +218,95 @@ const CourseManager = () => {
   };
 
   const handleCreate = async (data) => {
-    console.group(`➕ Creating ${modalType}`);
-
     try {
       if (modalType === "course") {
-        // CourseModal handles its own submission
-        console.log("📝 Course creation handled by CourseModal");
-        toast.success("Course created successfully");
+        // Handled by CourseModal
       } else if (modalType === "category") {
         const payload = { ...data, contentType: COURSE_CONTENT_TYPE };
-        console.log("🔵 API Call: POST /admin/categories");
-        console.log("📤 Payload:", payload);
-        const result = await dispatch(createCategory(payload)).unwrap();
-        console.log("✅ Response:", result);
-        toast.success("Category created successfully");
+        await dispatch(createCategory(payload)).unwrap();
+        toast.success("Category created");
       } else if (modalType === "subcategory") {
-        const payload = targetParentId
-          ? { ...data, category: targetParentId }
-          : data;
-        console.log("🔵 API Call: POST /admin/subcategories");
-        console.log("📤 Payload:", payload);
-        const result = await dispatch(createSubCategory(payload)).unwrap();
-        console.log("✅ Response:", result);
-        toast.success("SubCategory created successfully");
+        const payload = {
+          ...data,
+          contentType: COURSE_CONTENT_TYPE,
+          category: targetParentId || data.category,
+        };
+        await dispatch(createSubCategory(payload)).unwrap();
+        toast.success("SubCategory created");
       }
       setIsModalOpen(false);
-      console.groupEnd();
     } catch (err) {
-      console.error("❌ Error:", err);
-      console.groupEnd();
       toast.error(typeof err === "string" ? err : "Operation failed");
     }
   };
 
   const handleUpdate = async (data) => {
-    console.group(`✏️ Updating ${modalType}`);
-    const id = selectedItem._id;
-    console.log("📦 Update Data:", { id, type: modalType });
-
     try {
+      const id = selectedItem._id;
       if (modalType === "course") {
-        // CourseModal handles its own submission
-        console.log("📝 Course update handled by CourseModal");
-        toast.success("Course updated successfully");
+        // Handled by CourseModal
       } else if (modalType === "category") {
-        console.log("🟡 API Call: PUT /admin/categories/:id");
-        console.log("📤 Payload:", { id, formData: data });
-        const result = await dispatch(
-          updateCategory({ id, formData: data }),
-        ).unwrap();
-        console.log("✅ Response:", result);
-        toast.success("Category updated successfully");
+        await dispatch(updateCategory({ id, formData: data })).unwrap();
+        toast.success("Category updated");
       } else if (modalType === "subcategory") {
-        console.log("🟡 API Call: PUT /admin/subcategories/:id");
-        console.log("📤 Payload:", { id, formData: data });
-        const result = await dispatch(
-          updateSubCategory({ id, formData: data }),
-        ).unwrap();
-        console.log("✅ Response:", result);
-        toast.success("SubCategory updated successfully");
+        await dispatch(updateSubCategory({ id, formData: data })).unwrap();
+        toast.success("SubCategory updated");
       }
       setIsModalOpen(false);
       setSelectedItem(null);
-      console.groupEnd();
     } catch (err) {
-      console.error("❌ Error:", err);
-      console.groupEnd();
-      toast.error("Update failed: " + (err.message || err));
+      toast.error("Update failed");
     }
   };
 
   const handleDelete = async (type, id) => {
     if (!window.confirm("Are you sure? This cannot be undone.")) return;
-
-    console.group(`🗑️ Deleting ${type}`);
-    console.log("📦 Delete Data:", { type, id });
-
     try {
       if (type === "course") {
-        console.log("🔴 API Call: DELETE /admin/courses/:id");
-        console.log("📤 Payload:", { id });
-        const result = await dispatch(deleteCourse(id)).unwrap();
-        console.log("✅ Response:", result);
+        await dispatch(deleteCourse(id)).unwrap();
+        setFullCourses((prev) => prev.filter((c) => c._id !== id));
       } else if (type === "category") {
-        console.log("🔴 API Call: DELETE /admin/categories/:id");
-        console.log("📤 Payload:", { id });
-        const result = await dispatch(deleteCategory(id)).unwrap();
-        console.log("✅ Response:", result);
+        await dispatch(deleteCategory(id)).unwrap();
       } else if (type === "subcategory") {
-        console.log("🔴 API Call: DELETE /admin/subcategories/:id");
-        console.log("📤 Payload:", { id });
-        const result = await dispatch(deleteSubCategory(id)).unwrap();
-        console.log("✅ Response:", result);
+        await dispatch(deleteSubCategory(id)).unwrap();
       }
       toast.success("Deleted successfully");
-      console.groupEnd();
     } catch (err) {
-      console.error("❌ Error:", err);
-      console.groupEnd();
-      toast.error("Delete failed: " + (err.message || err));
+      toast.error("Delete failed");
     }
   };
 
   const handleToggleActive = async (course) => {
-    console.group(`🔄 Toggle Status Request - ${course.name}`);
-    console.log("📦 Course ID:", course._id);
-    console.log("📦 Current Data:", {
-      hasIsActiveField: typeof course.isActive !== "undefined",
-      isActive: course.isActive,
-      name: course.name,
-    });
-
-    if (!course || !course._id) {
-      console.error("❌ Invalid course data - missing ID");
-      console.groupEnd();
-      toast.error("Invalid course data");
-      return;
-    }
-
-    // Check if isActive field exists (backend may return simplified data)
     if (typeof course.isActive === "undefined") {
-      console.error("❌ Course missing isActive field");
-      console.warn("⚠️ This means backend returned simplified data");
-      console.warn(
-        "💡 Solution: Wait for full course data to load or fix backend",
-      );
-      console.groupEnd();
-      toast.error(
-        "Cannot toggle status: Course data still loading. Please wait...",
-        { duration: 3000 },
-      );
+      toast.error("Please wait for course details to load...");
       return;
     }
 
-    console.group(`🔄 Toggling Course Status - ${course.name}`);
-    console.log("📦 Course Data:", {
-      id: course._id,
-      name: course.name,
-      currentStatus: course.isActive ? "ACTIVE" : "INACTIVE",
-      targetStatus: course.isActive ? "INACTIVE" : "ACTIVE",
-    });
-
+    const newStatus = !course.isActive;
+    const action = newStatus ? publishCourse : unpublishCourse;
     const loadingToast = toast.loading(
-      course.isActive ? "Unpublishing course..." : "Publishing course...",
+      newStatus ? "Publishing..." : "Unpublishing...",
     );
 
     try {
-      let result;
-      if (course.isActive) {
-        console.log("🔴 API Call: PATCH /admin/courses/:id/unpublish");
-        console.log("📤 Payload:", { courseId: course._id });
-        result = await dispatch(unpublishCourse(course._id)).unwrap();
-        console.log("✅ Response:", result);
-        toast.success("Course unpublished successfully", { id: loadingToast });
-      } else {
-        console.log("🟢 API Call: PATCH /admin/courses/:id/publish");
-        console.log("📤 Payload:", { courseId: course._id });
-        result = await dispatch(publishCourse(course._id)).unwrap();
-        console.log("✅ Response:", result);
-        toast.success("Course published successfully", { id: loadingToast });
-      }
-
-      console.log("✅ Course status updated in Redux store");
-      console.log("📊 Updated course data:", result);
-
-      // Refresh the courses list to ensure UI is in sync
-      console.log("🔄 Refreshing course list...");
-      await dispatch(fetchCourses({ contentType: COURSE_CONTENT_TYPE }));
-      console.log("✅ Course list refreshed");
-      console.groupEnd();
-    } catch (error) {
-      console.error("❌ Error:", error);
-      console.groupEnd();
-
-      const errorMessage =
-        error?.message ||
-        error?.error ||
-        error ||
-        "Failed to update course status";
-
-      toast.error(
-        `Failed to ${course.isActive ? "unpublish" : "publish"} course: ${errorMessage}`,
-        { id: loadingToast },
+      // Optimistic update
+      setFullCourses((prev) =>
+        prev.map((c) =>
+          c._id === course._id ? { ...c, isActive: newStatus } : c,
+        ),
       );
+      await dispatch(action(course._id)).unwrap();
+      toast.success(`Course ${newStatus ? "published" : "unpublished"}`, {
+        id: loadingToast,
+      });
+    } catch (error) {
+      // Revert on failure
+      setFullCourses((prev) =>
+        prev.map((c) =>
+          c._id === course._id ? { ...c, isActive: !newStatus } : c,
+        ),
+      );
+      toast.error("Status update failed", { id: loadingToast });
     }
   };
 
@@ -501,13 +314,7 @@ const CourseManager = () => {
   const getModalConfig = () => {
     if (modalType === "category") {
       return [
-        {
-          name: "name",
-          label: "Category Name",
-          type: "text",
-          required: true,
-          placeholder: "e.g. UPSC Preparation",
-        },
+        { name: "name", label: "Category Name", type: "text", required: true },
         { name: "description", label: "Description", type: "textarea" },
         {
           name: "thumbnail",
@@ -525,7 +332,6 @@ const CourseManager = () => {
           label: "SubCategory Name",
           type: "text",
           required: true,
-          placeholder: "e.g. IAS Mains",
         },
         { name: "description", label: "Description", type: "textarea" },
         {
@@ -537,15 +343,11 @@ const CourseManager = () => {
         },
       ];
       if (!targetParentId && !selectedItem) {
-        const options = categories.map((c) => ({
-          label: c.name,
-          value: c._id,
-        }));
         fields.unshift({
           name: "category",
           label: "Parent Category",
           type: "select",
-          options,
+          options: categories.map((c) => ({ label: c.name, value: c._id })),
           required: true,
         });
       }
@@ -554,210 +356,163 @@ const CourseManager = () => {
     return [];
   };
 
-  // --- COURSE TABLE COLUMNS ---
-  const courseColumns = [
-    {
-      header: "Course",
-      accessor: "name",
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          {row.thumbnail ? (
-            <img
-              src={row.thumbnail}
-              alt=""
-              className="w-16 h-16 rounded-lg object-cover border-2 border-blue-100 shadow-md"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-lg bg-blue-50 flex items-center justify-center border-2 border-blue-100">
-              <BookOpen
-                className="w-7 h-7"
-                style={{ color: "var(--color-primary)" }}
+  // --- COLUMNS ---
+  const courseColumns = useMemo(
+    () => [
+      {
+        header: "Course",
+        accessor: "name",
+        render: (row) => (
+          <div className="flex items-center gap-3">
+            {row.thumbnail ? (
+              <img
+                src={row.thumbnail}
+                alt=""
+                className="w-12 h-12 rounded-lg object-cover border border-slate-200"
               />
-            </div>
-          )}
-          <div className="flex-1">
-            <p className="font-bold text-slate-900">{row.name}</p>
-            <p className="text-xs text-slate-500 line-clamp-1">
-              {row.description || "No description"}
-            </p>
-            <div className="flex gap-2 mt-1">
-              {row.languages && row.languages[0] && (
-                <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                  {row.languages[0].name}
-                </span>
-              )}
+            ) : (
+              <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
+                <BookOpen className="w-6 h-6 text-blue-500" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900 truncate">{row.name}</p>
+              <div className="flex gap-2 mt-0.5">
+                {row.languages?.map((l, i) => (
+                  <span
+                    key={i}
+                    className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200"
+                  >
+                    {l.code || l.name}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      header: "Content",
-      accessor: "classes",
-      render: (row) => (
-        <div className="space-y-1 text-xs">
-          <div className="flex items-center gap-2 text-blue-600 font-bold">
-            <Video className="w-3 h-3" /> {row.classes?.length || 0} Classes
-          </div>
-          <div className="flex items-center gap-2 text-amber-600 font-bold">
-            <FileText className="w-3 h-3" /> {row.studyMaterials?.length || 0}{" "}
-            Materials
-          </div>
-          <div className="flex items-center gap-2 text-violet-600 font-bold">
-            <Users className="w-3 h-3" /> {row.tutors?.length || 0} Tutors
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: "Category",
-      accessor: "categories",
-      render: (row) => (
-        <div className="flex flex-wrap gap-1">
-          {row.categories?.slice(0, 2).map((c, i) => (
-            <span
-              key={i}
-              className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded"
-            >
-              {c.name || c}
-            </span>
-          ))}
-          {row.categories?.length > 2 && (
-            <span className="text-xs font-bold text-slate-400">
-              +{row.categories.length - 2}
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: "Price",
-      accessor: "originalPrice",
-      render: (row) => (
-        <div>
-          {row.accessType === "FREE" ? (
-            <span className="text-sm font-black text-green-600 bg-green-50 px-3 py-1 rounded-lg">
-              🎁 FREE
-            </span>
-          ) : (
-            <div className="space-y-1">
-              <p
-                className="text-lg font-black"
-                style={{ color: "var(--color-primary)" }}
-              >
-                ₹
-                {(row.discountPrice || row.originalPrice || 0).toLocaleString()}
-              </p>
-              {row.originalPrice > row.discountPrice && (
-                <p className="text-xs text-slate-400 line-through">
-                  ₹{row.originalPrice.toLocaleString()}
-                </p>
-              )}
+        ),
+      },
+      {
+        header: "Stats",
+        render: (row) => (
+          <div className="space-y-1 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5">
+              <Video size={12} className="text-blue-500" />{" "}
+              {row.classes?.length || 0} Classes
             </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: "Status",
-      accessor: "isActive",
-      render: (row) => {
-        // Handle case where isActive is undefined (backend returns simplified data)
-        const hasStatusData = typeof row.isActive !== "undefined";
-
-        if (!hasStatusData) {
-          return (
-            <div
-              className="px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2"
-              style={{
-                backgroundColor: "var(--color-warning-bg)",
-                color: "var(--color-warning-text)",
-              }}
-              title="Loading full course data..."
-            >
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Loading...
+            <div className="flex items-center gap-1.5">
+              <Users size={12} className="text-purple-500" />{" "}
+              {row.tutors?.length || 0} Tutors
             </div>
-          );
-        }
-
-        return (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleToggleActive(row);
-            }}
-            disabled={courseLoading || isLoadingFullData}
-            title={`Click to ${row.isActive ? "unpublish" : "publish"} this course`}
-            style={{
-              backgroundColor: row.isActive
-                ? "var(--color-brand-green-light)"
-                : "var(--color-danger-bg)",
-              color: row.isActive
-                ? "var(--color-brand-green)"
-                : "var(--color-danger-text)",
-            }}
-            className="px-4 py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md active:shadow-lg"
-          >
-            {courseLoading ? (
-              <span className="flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" />
-                {row.isActive ? "Active" : "Inactive"}
+          </div>
+        ),
+      },
+      {
+        header: "Price",
+        accessor: "originalPrice",
+        render: (row) => (
+          <div>
+            {row.accessType === "FREE" ? (
+              <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md">
+                FREE
               </span>
             ) : (
-              <span>{row.isActive ? "✓ Active" : "✗ Inactive"}</span>
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-800">
+                  ₹
+                  {(
+                    row.discountPrice ||
+                    row.originalPrice ||
+                    0
+                  ).toLocaleString()}
+                </span>
+                {row.originalPrice > row.discountPrice && (
+                  <span className="text-[10px] text-slate-400 line-through">
+                    ₹{row.originalPrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
             )}
-          </button>
-        );
+          </div>
+        ),
       },
-    },
-    {
-      header: "Actions",
-      accessor: "_id",
-      className: "text-right",
-      render: (row) => (
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={() => openEditModal("course", row)}
-            className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-            style={{ color: "var(--color-primary)" }}
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleDelete("course", row._id)}
-            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ),
-    },
-  ];
+      {
+        header: "Status",
+        accessor: "isActive",
+        render: (row) => {
+          if (typeof row.isActive === "undefined") {
+            return (
+              <div className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-medium flex items-center gap-1 w-fit">
+                <Loader2 className="w-3 h-3 animate-spin" /> Loading...
+              </div>
+            );
+          }
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleActive(row);
+              }}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                row.isActive
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : "bg-red-100 text-red-700 hover:bg-red-200"
+              }`}
+            >
+              {row.isActive ? "Active" : "Inactive"}
+            </button>
+          );
+        },
+      },
+      {
+        header: "Actions",
+        className: "text-right",
+        render: (row) => (
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => {
+                if (typeof row.isActive === "undefined")
+                  toast("Loading details...", { icon: "⏳" });
+                else openEditModal("course", row);
+              }}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <Edit2 size={16} />
+            </button>
+            <button
+              onClick={() => handleDelete("course", row._id)}
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [fullCourses],
+  );
 
   return (
     <div className="p-6 space-y-6">
-      {/* 🎓 HERO HEADER */}
+      {/* 🎓 HERO HEADER - BRAINBUZZ THEME */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-2xl p-6 shadow-lg"
         style={{ background: "var(--color-brand-blue)" }}
       >
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-white/20 rounded-xl">
-            <BookOpen className="w-7 h-7 text-white" />
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <BookOpen className="w-8 h-8 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-black text-white flex items-center gap-3">
               Course Manager
-              <span className="px-3 py-1 bg-white/20 text-sm rounded-full border border-white/30">
+              <span className="px-3 py-1 bg-white/20 text-sm rounded-full border border-white/30 font-medium">
                 {statistics.totalCourses} Courses
               </span>
             </h1>
-            <p className="text-white/90 text-base flex items-center gap-2 mt-1">
-              <TrendingUp size={14} /> Manage online courses & classifications
+            <p className="text-blue-100 text-base flex items-center gap-2 mt-1">
+              <TrendingUp size={16} /> Manage online courses, tutors & content
             </p>
           </div>
         </div>
@@ -793,19 +548,16 @@ const CourseManager = () => {
 
       {/* 🎯 TAB HEADER & SEARCH */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 flex flex-col xl:flex-row justify-between items-center gap-4">
-        <div className="flex p-1 bg-slate-100 rounded-xl overflow-x-auto w-full xl:w-auto">
+        <div className="flex p-1 bg-slate-100 rounded-xl">
           {["courses", "classifications"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2.5 rounded-lg text-sm font-bold capitalize whitespace-nowrap transition-all ${
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold capitalize transition-all ${
                 activeTab === tab
-                  ? "bg-white shadow-sm"
+                  ? "bg-white shadow-sm text-[var(--color-brand-blue)]"
                   : "text-slate-500 hover:text-slate-700"
               }`}
-              style={
-                activeTab === tab ? { color: "var(--color-brand-blue)" } : {}
-              }
             >
               {tab}
             </button>
@@ -822,15 +574,8 @@ const CourseManager = () => {
             onClick={() =>
               openCreateModal(activeTab === "courses" ? "course" : "category")
             }
-            className="px-4 py-2 text-white rounded-xl font-bold flex items-center gap-2 transition-all"
+            className="px-4 py-2 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
             style={{ background: "var(--color-brand-blue)" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background =
-                "var(--color-brand-blue-dark)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "var(--color-brand-blue)")
-            }
           >
             <Plus className="w-5 h-5" /> Add New
           </button>
@@ -838,48 +583,39 @@ const CourseManager = () => {
       </div>
 
       {/* 📑 CONTENT AREA */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {/* TAB 1: COURSES */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden min-h-[400px]">
         {activeTab === "courses" && (
           <DataTable
             title=""
             columns={courseColumns}
             data={filteredCourses}
-            loading={courseLoading}
+            loading={courseLoading && fullCourses.length === 0}
             hideSearch={true}
           />
         )}
 
-        {/* TAB 2: CLASSIFICATIONS (Categories & Subcategories) */}
         {activeTab === "classifications" && (
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-3">
             {catLoading || subLoading ? (
               <div className="flex justify-center items-center h-64 text-indigo-500">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : filteredCategories.length === 0 ? (
-              <div className="text-center py-12">
-                <FolderTree className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-slate-600 mb-2">
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FolderTree className="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-700">
                   No Categories Found
                 </h3>
-                <p className="text-slate-500 mb-4">
-                  Create your first category to organize courses
+                <p className="text-slate-500 text-sm mb-6">
+                  Create a category to start organizing content.
                 </p>
                 <button
                   onClick={() => openCreateModal("category")}
-                  className="px-6 py-3 text-white rounded-xl font-bold transition-all"
+                  className="px-5 py-2 text-white rounded-lg font-bold text-sm"
                   style={{ background: "var(--color-brand-blue)" }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "var(--color-brand-blue-dark)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background =
-                      "var(--color-brand-blue)")
-                  }
                 >
-                  <Plus className="w-5 h-5 inline mr-2" />
                   Create Category
                 </button>
               </div>
@@ -887,22 +623,24 @@ const CourseManager = () => {
               filteredCategories.map((category) => (
                 <div
                   key={category._id}
-                  className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+                  className="border border-slate-200 rounded-xl overflow-hidden hover:border-blue-200 transition-colors"
                 >
                   <div
-                    className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="flex items-center justify-between p-4 bg-slate-50 hover:bg-white cursor-pointer group"
                     onClick={() => toggleExpand(category._id)}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <ChevronRight
                         className={`w-5 h-5 text-slate-400 transition-transform ${
-                          expandedCategories[category._id] ? "rotate-90" : ""
+                          expandedCategories[category._id]
+                            ? "rotate-90 text-blue-500"
+                            : ""
                         }`}
                       />
                       {category.thumbnailUrl ? (
                         <img
                           src={category.thumbnailUrl}
-                          className="w-10 h-10 rounded-lg object-cover border border-slate-200"
+                          className="w-10 h-10 rounded-lg object-cover bg-white border border-slate-200"
                           alt=""
                         />
                       ) : (
@@ -911,7 +649,7 @@ const CourseManager = () => {
                         </div>
                       )}
                       <div>
-                        <h3 className="text-sm font-bold text-slate-800">
+                        <h3 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                           {category.name}
                         </h3>
                         <p className="text-xs text-slate-500">
@@ -923,104 +661,91 @@ const CourseManager = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           openCreateModal("subcategory", category._id);
                         }}
-                        className="px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-all"
-                        style={{
-                          color: "var(--color-brand-blue)",
-                          background: "var(--color-primary-light)",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background =
-                            "var(--color-brand-blue-lighter)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background =
-                            "var(--color-primary-light)")
-                        }
+                        className="px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
                       >
-                        <Plus className="w-3 h-3" /> Add Sub
+                        + Sub
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           openEditModal("category", category);
                         }}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 size={16} />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete("category", category._id);
                         }}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
 
                   {expandedCategories[category._id] && (
-                    <div className="border-t border-slate-200 bg-white">
+                    <div className="border-t border-slate-100 bg-white">
                       {(search
                         ? filteredSubCategories[category._id]
                         : groupedSubCategories[category._id]
                       )?.length > 0 ? (
-                        <div className="grid grid-cols-1 divide-y divide-slate-100">
+                        <div className="grid grid-cols-1 divide-y divide-slate-50">
                           {(search
                             ? filteredSubCategories[category._id]
                             : groupedSubCategories[category._id]
                           ).map((sub) => (
                             <div
                               key={sub._id}
-                              className="flex items-center justify-between p-3 pl-14 hover:bg-slate-50"
+                              className="flex items-center justify-between p-3 pl-16 hover:bg-slate-50 group"
                             >
                               <div className="flex items-center gap-3">
-                                {sub.thumbnailUrl ? (
-                                  <img
-                                    src={sub.thumbnailUrl}
-                                    className="w-8 h-8 rounded-lg object-cover border border-slate-200"
-                                    alt=""
-                                  />
-                                ) : (
-                                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
+                                  {sub.thumbnailUrl ? (
+                                    <img
+                                      src={sub.thumbnailUrl}
+                                      className="w-full h-full object-cover rounded-lg"
+                                    />
+                                  ) : (
                                     <FolderTree className="w-4 h-4" />
-                                  </div>
-                                )}
+                                  )}
+                                </div>
                                 <span className="text-sm font-medium text-slate-700">
                                   {sub.name}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
                                 <button
                                   onClick={() =>
                                     openEditModal("subcategory", sub)
                                   }
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                                  className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md"
                                 >
-                                  <Edit2 className="w-3 h-3" />
+                                  <Edit2 size={14} />
                                 </button>
                                 <button
                                   onClick={() =>
                                     handleDelete("subcategory", sub._id)
                                   }
-                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md"
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  <Trash2 size={14} />
                                 </button>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="p-6 text-center text-slate-400 text-sm italic">
-                          No subcategories found. Add one above.
+                        <div className="p-4 text-center text-slate-400 text-xs italic">
+                          No subcategories found.
                         </div>
                       )}
                     </div>
@@ -1068,30 +793,32 @@ const CourseManager = () => {
 // 🎨 STAT CARD COMPONENT
 const StatCard = ({ title, value, icon: Icon, color }) => {
   const colorMap = {
-    blue: "var(--color-primary)",
-    green: "var(--color-success)",
-    purple: "var(--color-purple)",
-    amber: "var(--color-amber)",
+    blue: "bg-blue-500",
+    green: "bg-green-500",
+    purple: "bg-purple-500",
+    amber: "bg-amber-500",
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.02, y: -5 }}
-      className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200"
+      whileHover={{ y: -4 }}
+      className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md transition-all"
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            {title}
+          </h3>
+          <p className="text-2xl font-black text-slate-800 mt-2">{value}</p>
+        </div>
         <div
-          className="p-3 rounded-xl shadow-md"
-          style={{ background: colorMap[color] }}
+          className={`p-3 rounded-xl shadow-sm ${colorMap[color]} text-white`}
         >
-          <Icon className="w-6 h-6 text-white" />
+          <Icon className="w-5 h-5" />
         </div>
       </div>
-
-      <h3 className="text-sm font-semibold text-slate-600 mb-1">{title}</h3>
-      <p className="text-3xl font-black text-slate-900">{value}</p>
     </motion.div>
   );
 };
