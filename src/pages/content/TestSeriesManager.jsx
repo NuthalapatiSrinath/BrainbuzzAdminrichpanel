@@ -245,7 +245,7 @@ const TestSeriesManager = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-purple-950/20 p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Hero Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

@@ -1,54 +1,69 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import Footer from "./Footer"; // Import the single file Footer
 
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const [zoomScale, setZoomScale] = useState(1);
 
-  // Handle Theme
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
     localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
-  // Handle Resize
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       const mobile = width < 1024;
+
       setIsMobile(mobile);
+
       if (mobile) setIsSidebarOpen(false);
       if (!mobile && !isSidebarOpen) setIsSidebarOpen(true);
+
+      if (width < 1100) {
+        const scale = width / 1100;
+        setZoomScale(scale);
+      } else {
+        setZoomScale(1);
+      }
     };
+
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 👉 Zoom ONLY on mobile
+  const contentStyle = isMobile
+    ? {
+        zoom: zoomScale,
+        MozTransform: `scale(${zoomScale})`,
+        MozTransformOrigin: "top left",
+        width: "1100px",
+      }
+    : {};
+
   return (
-    <div className="flex min-h-screen bg-page text-text-main transition-colors duration-300 font-sans">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-purple-950/20 text-text-main font-sans transition-colors duration-300 flex overflow-x-hidden">
       <Sidebar
         isOpen={isSidebarOpen}
         isMobile={isMobile}
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* Main Wrapper */}
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 
-        ${!isMobile ? "ml-[72px]" : "ml-0"}`}
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300
+          ${!isMobile ? "ml-[72px]" : "ml-0"}
+        `}
       >
         <Header
           onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -56,15 +71,16 @@ const Layout = () => {
           toggleTheme={toggleTheme}
         />
 
-        {/* Content Area */}
-        <main className="flex-1 p-6 overflow-x-hidden">
-          <div className="max-w-[1600px] mx-auto w-full">
+        <main className="flex-1 overflow-x-hidden w-full">
+          <div
+            className={`animate-fade-in origin-top-left ${
+              isMobile ? "" : "max-w-[1400px] mx-auto w-full"
+            }`}
+            style={contentStyle}
+          >
             <Outlet />
           </div>
         </main>
-
-        {/* The New Footer */}
-        {/* <Footer /> */}
       </div>
     </div>
   );

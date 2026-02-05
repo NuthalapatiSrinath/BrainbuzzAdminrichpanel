@@ -166,7 +166,7 @@ const BannerManager = () => {
     );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 font-sans">
+    <div className="p-6 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* HEADER */}
         <div className="flex justify-between items-end">
@@ -178,7 +178,7 @@ const BannerManager = () => {
               Manage banners, images, and feature sections.
             </p>
           </div>
-          <div className="bg-white p-1 rounded-lg shadow-sm border border-slate-200">
+          <div className="bg-white dark:bg-gray-800 p-1 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700">
             {["HOME", "ABOUT"].map((tab) => (
               <button
                 key={tab}
@@ -265,7 +265,7 @@ const BannerManager = () => {
             </div>
 
             {/* 2. CONTENT EDITING */}
-            <form className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <form className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 space-y-4">
               <h3 className="font-bold text-slate-800 flex items-center gap-2 border-b pb-2">
                 <Type size={18} /> Page Content
               </h3>
@@ -351,7 +351,7 @@ const BannerManager = () => {
 
             {/* 3. FEATURE CARDS (About Only) */}
             {activeTab === "ABOUT" && (
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700">
                 <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-4 border-b pb-2">
                   <Layers size={18} /> Feature Sections
                 </h3>
@@ -388,15 +388,15 @@ const BannerManager = () => {
               </span>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[500px]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden min-h-[500px]">
               {/* Browser Bar */}
-              <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center gap-2">
+              <div className="bg-slate-100 dark:bg-gray-700 px-4 py-2 border-b border-slate-200 dark:border-gray-600 flex items-center gap-2">
                 <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-gray-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-gray-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-gray-500" />
                 </div>
-                <div className="bg-white border text-xs text-slate-400 px-3 py-0.5 rounded-md flex-1">
+                <div className="bg-white dark:bg-gray-600 border border-slate-200 dark:border-gray-500 text-xs text-slate-400 dark:text-gray-300 px-3 py-0.5 rounded-md flex-1">
                   brainbuzz.app/{activeTab.toLowerCase()}
                 </div>
               </div>

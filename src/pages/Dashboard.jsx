@@ -275,12 +275,12 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/20 p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Hero Header with animated gradient */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 shadow-2xl"
+        className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-3xl p-8 shadow-2xl"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full -ml-48 -mb-48 blur-3xl" />
@@ -330,7 +330,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.02, y: -5 }}
-              className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} dark:${stat.darkBg} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-white dark:border-gray-800`}
+              className={`relative overflow-hidden bg-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-border`}
             >
               {/* Animated background circles */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 dark:bg-white/5 rounded-full -mr-16 -mt-16" />
@@ -345,10 +345,10 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                <h3 className="text-sm font-semibold text-text-sub mb-1">
                   {stat.title}
                 </h3>
-                <p className="text-3xl font-black text-gray-900 dark:text-white">
+                <p className="text-3xl font-black text-text-main">
                   {stat.value}
                 </p>
               </div>
@@ -363,13 +363,13 @@ const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+          className="lg:col-span-2 bg-card rounded-2xl p-6 shadow-lg border border-border"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <PieChart className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-xl font-black text-gray-900 dark:text-white">
+            <h3 className="text-xl font-black text-text-main">
               Learning Management Content
             </h3>
           </div>
@@ -385,7 +385,7 @@ const Dashboard = () => {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="20"
-                  className="text-gray-100 dark:text-gray-700"
+                  className="text-border"
                 />
                 {learningContent.map((item, index) => {
                   const percentage =
@@ -424,10 +424,10 @@ const Dashboard = () => {
                 })}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-black text-gray-900 dark:text-white">
+                <span className="text-5xl font-black text-text-main">
                   {totalLearningContent}
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                <span className="text-sm text-text-sub mt-2">
                   Total Learning Items
                 </span>
               </div>
@@ -448,10 +448,10 @@ const Dashboard = () => {
                     style={{ backgroundColor: item.color }}
                   />
                   <div className="flex-1">
-                    <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                    <div className="text-xs font-bold text-text-main">
                       {item.name}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-text-sub">
                       {item.value} ({percentage}%)
                     </div>
                   </div>
@@ -465,29 +465,27 @@ const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+          className="bg-card rounded-2xl p-6 shadow-lg border border-border"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-xl font-black text-gray-900 dark:text-white">
-              Quick Stats
-            </h3>
+            <h3 className="text-xl font-black text-text-main">Quick Stats</h3>
           </div>
 
           <div className="space-y-4">
             {/* Active status */}
             <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl border-2 border-green-200 dark:border-green-800">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-bold text-text-main">
                   🟢 Active Courses
                 </span>
                 <span className="text-2xl font-black text-green-600">
                   {activeCourses}
                 </span>
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
+              <div className="text-xs text-text-sub">
                 Out of {courses.length} total courses
               </div>
             </div>
@@ -543,7 +541,7 @@ const Dashboard = () => {
           <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
             <Layers className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-2xl font-black text-gray-900 dark:text-white">
+          <h3 className="text-2xl font-black text-text-main">
             All Content Modules
           </h3>
         </div>
@@ -559,7 +557,7 @@ const Dashboard = () => {
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ scale: 1.05, y: -5 }}
                 onClick={() => navigate(stat.link)}
-                className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 cursor-pointer"
+                className="group relative overflow-hidden bg-card rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 cursor-pointer"
                 style={{
                   borderColor: borderColors[stat.color],
                 }}
@@ -591,10 +589,10 @@ const Dashboard = () => {
                     )}
                   </div>
 
-                  <h3 className="text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">
+                  <h3 className="text-sm font-bold text-text-sub mb-2">
                     {stat.title}
                   </h3>
-                  <p className="text-4xl font-black text-gray-900 dark:text-white mb-3">
+                  <p className="text-4xl font-black text-text-main mb-3">
                     {stat.count}
                   </p>
 

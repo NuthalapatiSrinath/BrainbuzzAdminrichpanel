@@ -1,24 +1,26 @@
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import {
   LayoutDashboard,
-  BookOpen, // Courses & E-Books
-  FileText, // Test Series
-  Newspaper, // Current Affairs
-  ShoppingCart, // Orders
-  Users, // Users
+  BookOpen,
+  FileText,
+  Newspaper,
+  ShoppingCart,
+  Users,
   Settings,
   LogOut,
   X,
   HelpCircle,
-  Image as ImageIcon, // Banners
-  Tag, // Coupons
-  Video, // Live Class
-  FileQuestion, // PYQ
+  Image as ImageIcon,
+  Tag,
+  Video,
+  FileQuestion,
   Languages,
   Clock,
-  Book, // Publications
+  Book,
+  ChevronRight,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { logout } from "../store/slices/authSlice";
@@ -26,8 +28,6 @@ import { logout } from "../store/slices/authSlice";
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
   const location = useLocation();
   const dispatch = useDispatch();
-
-  // Removed openMenus state and toggle logic since all items are now flat
 
   const handleLinkClick = () => {
     if (isMobile && onClose) onClose();
@@ -41,14 +41,14 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
     ? `
       group
       fixed top-0 left-0 h-full z-50
-      bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
+      bg-card border-r border-border
       transition-all duration-300
       flex flex-col
-      w-[72px] hover:w-[280px] shadow-xl
+      w-[72px] hover:w-[280px]
     `
     : `
       fixed top-0 left-0 h-full z-50
-      bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
+      bg-card border-r border-border
       transition-transform duration-300
       w-[280px] max-w-[85vw] flex flex-col
       ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -71,7 +71,8 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
 
       <aside className={sidebarClasses}>
         {/* HEADER */}
-        <div className="h-16 flex items-center px-5 border-b border-slate-200 dark:border-slate-800 shrink-0 gap-3 bg-white dark:bg-slate-900 relative">
+        <div className="h-header-h flex items-center px-5 border-b border-border/50 shrink-0 gap-3 bg-card relative">
+          {/* icon logo always visible */}
           <div className="w-10 h-10 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl shrink-0 border border-indigo-100 dark:border-indigo-800">
             <img
               src="/vite.svg"
@@ -80,23 +81,25 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             />
           </div>
 
+          {/* text logo → visible on mobile OR on desktop hover */}
           <div
             className={`flex flex-col ${
               isMobile ? "block" : "hidden group-hover:block"
             }`}
           >
-            <span className="font-bold text-lg text-slate-800 dark:text-white leading-none">
+            <span className="font-bold text-lg text-text-main leading-none">
               BrainBuzz
             </span>
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mt-0.5">
+            <span className="text-[10px] text-text-sub uppercase tracking-widest font-semibold mt-0.5">
               Admin Panel
             </span>
           </div>
 
+          {/* mobile close button */}
           {isMobile && (
             <button
               onClick={onClose}
-              className="absolute right-4 p-2 rounded-full text-slate-500 hover:text-red-500 bg-slate-50 hover:bg-red-50 transition-colors"
+              className="absolute right-4 p-2 rounded-full text-text-sub hover:text-danger bg-page hover:bg-red-50 transition-colors"
             >
               <X size={20} />
             </button>
@@ -104,9 +107,18 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
         </div>
 
         {/* NAVIGATION */}
-        <nav className="flex-1 px-3 py-6 overflow-y-auto no-scrollbar">
+        <nav className="flex-1 px-2 py-6 overflow-y-auto no-scrollbar">
           <ul className="space-y-1">
-            <SectionLabel label="Overview" isMobile={isMobile} />
+            {/* section label — only visible when expanded or mobile */}
+            <li
+              className={`
+              px-4 text-[11px] font-extrabold text-text-muted uppercase tracking-widest
+              mb-2 mt-1
+              ${isMobile ? "block" : "hidden group-hover:block"}
+            `}
+            >
+              Overview
+            </li>
 
             <NavItem
               to="/"
@@ -116,9 +128,17 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               isMobile={isMobile}
             />
 
-            <SectionLabel label="Learning Management" isMobile={isMobile} />
+            {/* LEARNING MANAGEMENT */}
+            <li
+              className={`
+              px-4 text-[11px] font-extrabold text-text-muted uppercase tracking-widest
+              mb-2 mt-6
+              ${isMobile ? "block" : "hidden group-hover:block"}
+            `}
+            >
+              Learning Management
+            </li>
 
-            {/* Individual Content Items - No Groups */}
             <NavItem
               to="/courses"
               icon={BookOpen}
@@ -183,7 +203,16 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               isMobile={isMobile}
             />
 
-            <SectionLabel label="Sales & Users" isMobile={isMobile} />
+            {/* SALES & USERS */}
+            <li
+              className={`
+              px-4 text-[11px] font-extrabold text-text-muted uppercase tracking-widest
+              mb-2 mt-6
+              ${isMobile ? "block" : "hidden group-hover:block"}
+            `}
+            >
+              Sales & Users
+            </li>
 
             <NavItem
               to="/orders"
@@ -209,16 +238,17 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               isMobile={isMobile}
             />
 
-            {/* System */}
+            {/* SYSTEM */}
             <li
-              className={`px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6 ${
-                isMobile ? "block" : "hidden group-hover:block"
-              }`}
+              className={`
+              px-4 text-[11px] font-extrabold text-text-muted uppercase tracking-widest
+              mb-2 mt-6
+              ${isMobile ? "block" : "hidden group-hover:block"}
+            `}
             >
               System
             </li>
 
-            {/* ✅ Added Languages Here */}
             <NavItem
               to="/languages"
               icon={Languages}
@@ -226,6 +256,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               onClick={handleLinkClick}
               isMobile={isMobile}
             />
+
             <NavItem
               to="/validity"
               icon={Clock}
@@ -233,6 +264,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               onClick={handleLinkClick}
               isMobile={isMobile}
             />
+
             <NavItem
               to="/settings"
               icon={Settings}
@@ -240,27 +272,20 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               onClick={handleLinkClick}
               isMobile={isMobile}
             />
-            {/* <NavItem
-              to="/support"
-              icon={HelpCircle}
-              label="Support"
-              onClick={handleLinkClick}
-              isMobile={isMobile}
-            /> */}
           </ul>
         </nav>
 
         {/* FOOTER */}
         <div
-          className={`p-4 border-t border-slate-200 dark:border-slate-800 shrink-0 bg-slate-50/50 dark:bg-slate-900 ${
+          className={`p-6 border-t border-border/50 shrink-0 bg-card ${
             isMobile ? "block" : "hidden group-hover:block"
           }`}
         >
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 py-2.5 rounded-xl font-bold transition-all text-xs uppercase tracking-wide shadow-sm"
+            className="w-full flex items-center justify-center gap-2 text-danger bg-danger/10 hover:bg-danger/20 py-3 rounded-lg font-bold transition-colors text-sm"
           >
-            <LogOut size={16} />
+            <LogOut size={18} />
             Logout Account
           </button>
         </div>
@@ -269,17 +294,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
   );
 };
 
-/* ---------- SUB COMPONENTS (Updated Colors) ---------- */
-
-const SectionLabel = ({ label, isMobile }) => (
-  <li
-    className={`px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6 ${
-      isMobile ? "block" : "hidden group-hover:block"
-    }`}
-  >
-    {label}
-  </li>
-);
+/* ---------- COMPONENTS ---------- */
 
 const NavItem = ({ to, icon: Icon, label, onClick, isMobile }) => (
   <li>
@@ -287,29 +302,31 @@ const NavItem = ({ to, icon: Icon, label, onClick, isMobile }) => (
       to={to}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center px-3 py-3 rounded-xl mb-1 transition-all duration-200 group/item relative overflow-hidden
+        `flex items-center px-4 py-3.5 rounded-lg mb-1 transition-all duration-200 group/item relative overflow-hidden
         ${
           isActive
-            ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-bold shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-800"
-            : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+            ? "bg-primary text-white font-semibold shadow-sm"
+            : "text-text-sub hover:bg-page hover:text-text-main"
         }`
       }
     >
       {({ isActive }) => (
         <>
           {isActive && (
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-indigo-600 rounded-r-full" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
           )}
 
           <Icon
-            className={`w-5 h-5 mr-3 shrink-0 transition-colors ${
+            className={`w-5 h-5 mr-3 shrink-0 ${
               isActive
-                ? "text-indigo-600 dark:text-indigo-400"
-                : "text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-300"
+                ? "text-white"
+                : "text-text-sub group-hover/item:text-primary"
             }`}
           />
+
+          {/* Label: Always visible on Mobile OR on Desktop Hover */}
           <span
-            className={`truncate font-medium text-sm ${
+            className={`truncate ${
               isMobile ? "inline" : "hidden group-hover:inline"
             }`}
           >
@@ -331,23 +348,24 @@ const MenuButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-all duration-200 group/item
+    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-lg mb-1 transition-all duration-200 group/item
       ${
         isActive
-          ? "bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold shadow-sm ring-1 ring-slate-200 dark:ring-slate-700"
-          : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+          ? "bg-page text-text-main font-medium shadow-sm"
+          : "text-text-sub hover:bg-page hover:text-text-main"
       }`}
   >
     <div className="flex items-center">
       <Icon
-        className={`w-5 h-5 mr-3 transition-colors ${
+        className={`w-5 h-5 mr-3 ${
           isActive
-            ? "text-indigo-600 dark:text-indigo-400"
-            : "text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-300"
+            ? "text-primary"
+            : "text-text-sub group-hover/item:text-primary"
         }`}
       />
+
       <span
-        className={`truncate font-medium text-sm ${
+        className={`truncate ${
           isMobile ? "inline" : "hidden group-hover:inline"
         }`}
       >
@@ -355,8 +373,9 @@ const MenuButton = ({
       </span>
     </div>
 
+    {/* Chevron: Always visible on Mobile OR on Desktop Hover */}
     <ChevronRight
-      className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${
+      className={`w-4 h-4 text-text-sub transition-transform duration-300 ${
         isOpen ? "rotate-90" : ""
       } ${isMobile ? "inline" : "hidden group-hover:inline"}`}
     />
@@ -370,7 +389,7 @@ const SubMenu = ({ isOpen, children, isMobile }) => (
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: "auto", opacity: 1 }}
         exit={{ height: 0, opacity: 0 }}
-        className={`ml-4 pl-4 border-l border-slate-200 dark:border-slate-800 overflow-hidden space-y-1 my-1 ${
+        className={`ml-5 pl-3 border-l-2 border-primary/20 overflow-hidden ${
           isMobile ? "block" : "hidden group-hover:block"
         }`}
       >
@@ -384,14 +403,13 @@ const SubNavItem = ({ to, label, onClick }) => (
   <li>
     <NavLink
       to={to}
-      end={true}
       onClick={onClick}
       className={({ isActive }) =>
-        `block px-3 py-2 text-[13px] rounded-lg transition-all duration-200 font-medium
+        `block px-4 py-2.5 text-[13px] rounded-r-lg transition-all duration-200
         ${
           isActive
-            ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+            ? "text-primary font-bold bg-primary-light/50 border-l-2 border-primary -ml-[2px]"
+            : "text-text-sub hover:text-text-main hover:bg-page"
         }`
       }
     >

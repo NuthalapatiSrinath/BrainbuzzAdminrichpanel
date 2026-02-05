@@ -494,7 +494,7 @@ const CourseManager = () => {
       </div>
 
       {/* TOOLBAR */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-4 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="w-full md:w-96">
           <SearchBar
             value={searchTerm}
@@ -523,7 +523,7 @@ const CourseManager = () => {
       </div>
 
       {/* DATA TABLE */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {/* overflow-x-auto ensures the table scrolls INSIDE this card if screen is small */}
         <div className="overflow-x-auto">
           <DataTable

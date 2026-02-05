@@ -127,17 +127,17 @@ const TestSeriesList = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Hero Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 shadow-2xl"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-400/20 rounded-full blur-3xl"></div>
-          
+
           <div className="relative flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-center md:text-left">
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1 }}
@@ -153,7 +153,7 @@ const TestSeriesList = () => {
                   📚 Test Series Manager
                 </h1>
               </motion.div>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -162,7 +162,7 @@ const TestSeriesList = () => {
                 🎯 Manage your exam bundles and packages
               </motion.p>
             </div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
@@ -191,7 +191,7 @@ const TestSeriesList = () => {
         </motion.div>
 
         {/* Content */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -200,7 +200,9 @@ const TestSeriesList = () => {
           {loading ? (
             <div className="h-96 flex flex-col items-center justify-center text-indigo-600">
               <Loader2 className="w-12 h-12 animate-spin mb-4" />
-              <p className="text-lg font-bold text-slate-600">Loading test series...</p>
+              <p className="text-lg font-bold text-slate-600">
+                Loading test series...
+              </p>
             </div>
           ) : (
             <DataTable columns={columns} data={filteredData} hideSearch />

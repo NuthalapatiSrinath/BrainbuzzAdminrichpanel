@@ -328,8 +328,8 @@ const PublicationManager = () => {
   return (
     <div className="p-6 space-y-6">
       {/* HEADER & TABS */}
-      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex flex-col xl:flex-row justify-between items-center gap-4">
-        <div className="flex p-1 bg-slate-100 rounded-xl overflow-x-auto w-full xl:w-auto">
+      <div className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col xl:flex-row justify-between items-center gap-4">
+        <div className="flex p-1 bg-slate-100 dark:bg-gray-700 rounded-xl overflow-x-auto w-full xl:w-auto">
           {["publications", "classification"].map((tab) => (
             <button
               key={tab}
@@ -361,7 +361,7 @@ const PublicationManager = () => {
       </div>
 
       {/* --- CONTENT AREA --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
         {/* TAB 1: PUBLICATIONS */}
         {activeTab === "publications" &&
           (pubLoading ? (

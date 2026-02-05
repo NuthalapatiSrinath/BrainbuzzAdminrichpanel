@@ -1,6 +1,5 @@
-import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, Moon, Sun, LogOut, Gem } from "lucide-react";
+import { Menu, Moon, Sun, LogOut } from "lucide-react";
 import toast from "react-hot-toast";
 import { appRoutes } from "../routes/AppRoutes"; // Importing the route list
 
@@ -25,19 +24,19 @@ const Header = ({ onMenuClick, theme, toggleTheme }) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    // Reload/Redirect to login
-    window.location.href = "/login";
+    localStorage.removeItem("isAuthenticated");
+    toast.success("Logged out successfully");
+    navigate("/login", { replace: true });
   };
 
   return (
     <header
-      style={{ backgroundColor: "var(--color-header-bg)" }}
       className="
       sticky top-0 z-30 
       flex items-center justify-between 
       h-14 md:h-header-h 
       px-4 md:px-8 
-      backdrop-blur-md 
+      bg-white/80 dark:bg-slate-900/80 backdrop-blur-md 
       border-b border-slate-200 dark:border-slate-800
       shadow-sm
       transition-all duration-300
@@ -48,14 +47,12 @@ const Header = ({ onMenuClick, theme, toggleTheme }) => {
         {/* Mobile Hamburger */}
         <button
           onClick={onMenuClick}
-          className="p-2 text-slate-500 hover:bg-slate-100 hover:text-amber-600 rounded-lg transition-colors lg:hidden"
+          className="p-2 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 rounded-lg transition-colors lg:hidden"
         >
           <Menu className="w-6 h-6" />
         </button>
 
-        <div className="hidden md:flex items-center gap-2">
-          {/* Context Icon (Jewelry Theme) */}
-
+        <div className="hidden md:block">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white transition-all duration-300 tracking-tight">
             {pageTitle}
           </h2>
@@ -67,7 +64,7 @@ const Header = ({ onMenuClick, theme, toggleTheme }) => {
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 md:p-2.5 rounded-full text-slate-500 hover:bg-slate-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 transition-all active:scale-95"
+          className="p-2 md:p-2.5 rounded-full text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 transition-all active:scale-95"
         >
           {theme === "dark" ? (
             <Sun className="w-5 h-5" />
@@ -81,13 +78,12 @@ const Header = ({ onMenuClick, theme, toggleTheme }) => {
 
         {/* User Profile */}
         <div className="flex items-center gap-2 md:gap-3 group cursor-pointer">
-          {/* User Avatar with Jewelry Gold Gradient */}
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-amber-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-md shadow-amber-500/30 group-hover:shadow-lg group-hover:shadow-amber-500/40 transition-all transform group-hover:scale-105">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-md shadow-indigo-500/30 group-hover:shadow-lg group-hover:shadow-indigo-500/40 transition-all transform group-hover:scale-105">
             {userInitial}
           </div>
 
           <div className="hidden lg:block leading-tight">
-            <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-amber-600 transition-colors">
+            <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors">
               {userName}
             </p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">

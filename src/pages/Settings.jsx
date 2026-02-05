@@ -10,79 +10,49 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// --- DEFAULT THEME CONFIGURATION (Simplified: Sidebar, Header, Page) ---
+// --- DEFAULT THEME CONFIGURATION ---
 const DEFAULT_THEME_CONFIG = {
   light: {
-    // Main Layout Colors
-    "--color-sidebar-bg": "#ffffff", // White
-    "--color-header-bg": "#ffffff", // White
-    "--color-page-bg": "#f1f5f9", // Slate 100
-
-    // Brand Colors (kept for buttons/accents)
-    "--color-primary": "#6366f1", // Indigo 500
-    "--color-primary-hover": "#4f46e5", // Indigo 600
-    "--color-primary-light": "#e0e7ff", // Indigo 100
-    "--color-primary-text": "#4338ca", // Indigo 700
-
-    // Other Layout Colors (kept for consistency)
-    "--color-card": "#ffffff", // White
-    "--color-border": "#e2e8f0", // Slate 200
-
-    // Text Colors
-    "--color-text-main": "#0f172a", // Slate 900
-    "--color-text-sub": "#64748b", // Slate 500
-    "--color-text-muted": "#94a3b8", // Slate 400
-    "--color-text-inverse": "#ffffff", // White
-
-    // Input Colors
-    "--color-input-bg": "#ffffff",
-    "--color-input-border": "#cbd5e1",
-    "--color-input-focus": "#6366f1",
+    primary: "#3b82f6",
+    page: "#f8fafc",
+    card: "#ffffff",
+    border: "#e2e8f0",
+    textMain: "#0f172a",
+    textSub: "#475569",
+    textMuted: "#94a3b8",
+    // Accents
+    indigo: "#6366f1",
+    purple: "#a855f7",
+    emerald: "#10b981",
+    teal: "#14b8a6",
+    amber: "#f59e0b",
+    rose: "#f43f5e",
+    success: "#10b981",
+    danger: "#ef4444",
+    warning: "#f59e0b",
   },
   dark: {
-    // Main Layout Colors
-    "--color-sidebar-bg": "#0f172a", // Slate 900
-    "--color-header-bg": "#0f172a", // Slate 900
-    "--color-page-bg": "#020617", // Slate 950
-
-    // Brand Colors (kept for buttons/accents)
-    "--color-primary": "#818cf8", // Indigo 400
-    "--color-primary-hover": "#6366f1", // Indigo 500
-    "--color-primary-light": "rgba(99, 102, 241, 0.15)",
-    "--color-primary-text": "#c7d2fe", // Indigo 200
-
-    // Other Layout Colors (kept for consistency)
-    "--color-card": "#0f172a", // Slate 900
-    "--color-border": "#1e293b", // Slate 800
-
-    // Text Colors
-    "--color-text-main": "#f8fafc", // Slate 50
-    "--color-text-sub": "#94a3b8", // Slate 400
-    "--color-text-muted": "#64748b", // Slate 500
-    "--color-text-inverse": "#020617", // Slate 950
-
-    // Input Colors
-    "--color-input-bg": "#0f172a",
-    "--color-input-border": "#334155",
-    "--color-input-focus": "#818cf8",
+    primary: "#3b82f6",
+    page: "#0f172a",
+    card: "#1e293b",
+    border: "#334155",
+    textMain: "#f3f4f6",
+    textSub: "#94a3b8",
+    textMuted: "#64748b",
   },
 };
 
 const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  // State to hold current config
   const [themeConfig, setThemeConfig] = useState(DEFAULT_THEME_CONFIG);
 
   // --- 1. Load Settings on Mount ---
   useEffect(() => {
-    // Try to load from local storage
-    const savedConfig = localStorage.getItem("brainbuzz_theme_config");
+    const savedConfig = localStorage.getItem("themeConfigV2");
     if (savedConfig) {
       try {
         const parsed = JSON.parse(savedConfig);
-        // Merge with defaults to ensure structure validity
         const merged = {
           light: { ...DEFAULT_THEME_CONFIG.light, ...parsed.light },
           dark: { ...DEFAULT_THEME_CONFIG.dark, ...parsed.dark },
@@ -94,7 +64,6 @@ const Settings = () => {
         applyThemeStyles(DEFAULT_THEME_CONFIG);
       }
     } else {
-      // Use Defaults if nothing saved
       applyThemeStyles(DEFAULT_THEME_CONFIG);
     }
     setLoading(false);
@@ -111,31 +80,39 @@ const Settings = () => {
       document.head.appendChild(styleTag);
     }
 
-    // Helper to generate CSS string from object
-    const generateVars = (obj) =>
-      Object.entries(obj)
-        .map(([key, value]) => `${key}: ${value};`)
-        .join("\n");
-
-    // Add fallback for --color-page (for backward compatibility)
-    const lightWithFallback = {
-      ...config.light,
-      "--color-page":
-        config.light["--color-page-bg"] || config.light["--color-page"],
-    };
-
-    const darkWithFallback = {
-      ...config.dark,
-      "--color-page":
-        config.dark["--color-page-bg"] || config.dark["--color-page"],
-    };
-
     const css = `
       :root {
-        ${generateVars(lightWithFallback)}
+        --color-primary: ${config.light.primary};
+        --color-page: ${config.light.page};
+        --color-card: ${config.light.card};
+        --color-border: ${config.light.border};
+        --color-text-main: ${config.light.textMain};
+        --color-text-sub: ${config.light.textSub};
+        --color-text-muted: ${config.light.textMuted};
+        --color-indigo: ${config.light.indigo};
+        --color-purple: ${config.light.purple};
+        --color-emerald: ${config.light.emerald};
+        --color-teal: ${config.light.teal};
+        --color-amber: ${config.light.amber};
+        --color-rose: ${config.light.rose};
+        --color-success: ${config.light.success};
+        --color-danger: ${config.light.danger};
+        --color-warning: ${config.light.warning};
+        --color-input-bg: ${config.light.page};
+        --color-input-border: ${config.light.border};
+        --color-input-focus: ${config.light.primary};
       }
+
       .dark {
-        ${generateVars(darkWithFallback)}
+        --color-primary: ${config.dark.primary};
+        --color-page: ${config.dark.page};
+        --color-card: ${config.dark.card};
+        --color-border: ${config.dark.border};
+        --color-text-main: ${config.dark.textMain};
+        --color-text-sub: ${config.dark.textSub};
+        --color-text-muted: ${config.dark.textMuted};
+        --color-input-bg: ${config.dark.page};
+        --color-input-border: ${config.dark.border};
       }
     `;
 
@@ -143,41 +120,31 @@ const Settings = () => {
   };
 
   // --- 3. Handlers ---
-  const handleColorChange = (mode, key, value) => {
-    setThemeConfig((prev) => {
-      const newConfig = {
-        ...prev,
-        [mode]: {
-          ...prev[mode],
-          [key]: value,
-        },
-      };
-      // Apply immediately for live preview
-      applyThemeStyles(newConfig);
-      return newConfig;
-    });
+  const handleThemeColorChange = (mode, key, value) => {
+    const newConfig = {
+      ...themeConfig,
+      [mode]: {
+        ...themeConfig[mode],
+        [key]: value,
+      },
+    };
+    applyThemeStyles(newConfig);
+    setThemeConfig(newConfig);
   };
 
-  const handleReset = () => {
-    if (window.confirm("Reset theme colors to default Royal Indigo?")) {
+  const handleResetThemeColors = () => {
+    if (window.confirm("Reset theme colors to default?")) {
       setThemeConfig(DEFAULT_THEME_CONFIG);
       applyThemeStyles(DEFAULT_THEME_CONFIG);
-      localStorage.setItem(
-        "brainbuzz_theme_config",
-        JSON.stringify(DEFAULT_THEME_CONFIG),
-      );
-      toast.success("Theme reset to defaults.");
+      localStorage.removeItem("themeConfigV2");
+      toast.success("Theme colors reset to default.");
     }
   };
 
   const handleSave = () => {
     setSaving(true);
-    // Simulate API call delay if needed, or just save to LS
     setTimeout(() => {
-      localStorage.setItem(
-        "brainbuzz_theme_config",
-        JSON.stringify(themeConfig),
-      );
+      localStorage.setItem("themeConfigV2", JSON.stringify(themeConfig));
       setSaving(false);
       toast.success("Theme settings saved successfully!");
     }, 500);
@@ -187,7 +154,7 @@ const Settings = () => {
     return (
       <div
         className="h-screen flex items-center justify-center"
-        style={{ backgroundColor: "var(--color-page-bg)" }}
+        style={{ backgroundColor: "var(--color-page)" }}
       >
         <Loader2 className="w-10 h-10 text-[var(--color-primary)] animate-spin" />
       </div>
@@ -196,8 +163,7 @@ const Settings = () => {
 
   return (
     <div
-      className="p-6 md:p-8 w-full min-h-screen text-[var(--color-text-main)] font-sans pb-24 transition-colors duration-300"
-      style={{ backgroundColor: "var(--color-page-bg)" }}
+      className="p-6 md:p-8 w-full text-[var(--color-text-main)] font-sans pb-24 transition-colors duration-300"
     >
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
@@ -210,7 +176,7 @@ const Settings = () => {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={handleReset}
+              onClick={handleResetThemeColors}
               className="px-4 py-2.5 rounded-xl text-sm font-bold text-[var(--color-text-sub)] bg-[var(--color-card)] border border-[var(--color-border)] hover:bg-[var(--color-page)] transition-all flex items-center gap-2"
             >
               <RotateCcw className="w-4 h-4" /> Reset Defaults
@@ -218,7 +184,7 @@ const Settings = () => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-[var(--color-text-inverse)] px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -242,24 +208,54 @@ const Settings = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Layout Colors */}
+              {/* Base Colors */}
               <div>
                 <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
-                  Layout Colors
+                  Base Colors
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
                   {[
-                    { key: "--color-sidebar-bg", label: "Sidebar Background" },
-                    { key: "--color-header-bg", label: "Header Background" },
-                    { key: "--color-page-bg", label: "Page Background" },
+                    { key: "primary", label: "Primary Brand" },
+                    { key: "page", label: "Page Background" },
+                    { key: "card", label: "Card Background" },
+                    { key: "border", label: "Borders" },
+                    { key: "textMain", label: "Main Text" },
+                    { key: "textSub", label: "Secondary Text" },
                   ].map((item) => (
                     <ColorInput
                       key={item.key}
                       label={item.label}
                       value={themeConfig.light[item.key]}
                       onChange={(val) =>
-                        handleColorChange("light", item.key, val)
+                        handleThemeColorChange("light", item.key, val)
                       }
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Accents */}
+              <div className="space-y-3 pt-2 border-t border-[var(--color-border)]">
+                <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+                  Accents & Status
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { key: "emerald", label: "Emerald" },
+                    { key: "indigo", label: "Indigo" },
+                    { key: "purple", label: "Purple" },
+                    { key: "teal", label: "Teal" },
+                    { key: "amber", label: "Amber" },
+                    { key: "rose", label: "Rose" },
+                  ].map((item) => (
+                    <ColorInput
+                      key={item.key}
+                      label={item.label}
+                      value={themeConfig.light[item.key]}
+                      onChange={(val) =>
+                        handleThemeColorChange("light", item.key, val)
+                      }
+                      compact
                     />
                   ))}
                 </div>
@@ -269,7 +265,7 @@ const Settings = () => {
 
           {/* --- DARK MODE SETTINGS --- */}
           <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-[var(--color-border)]">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
               <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                 <Moon className="w-5 h-5" />
               </div>
@@ -277,23 +273,26 @@ const Settings = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Layout Colors */}
+              {/* Base Colors (Dark) */}
               <div>
                 <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
-                  Layout Colors (Dark)
+                  Base Colors (Dark)
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
                   {[
-                    { key: "--color-sidebar-bg", label: "Sidebar Background" },
-                    { key: "--color-header-bg", label: "Header Background" },
-                    { key: "--color-page-bg", label: "Page Background" },
+                    { key: "primary", label: "Primary Brand (Dark)" },
+                    { key: "page", label: "Page Background (Dark)" },
+                    { key: "card", label: "Card Background (Dark)" },
+                    { key: "border", label: "Borders (Dark)" },
+                    { key: "textMain", label: "Main Text (Dark)" },
+                    { key: "textSub", label: "Secondary Text (Dark)" },
                   ].map((item) => (
                     <ColorInput
                       key={item.key}
                       label={item.label}
                       value={themeConfig.dark[item.key]}
                       onChange={(val) =>
-                        handleColorChange("dark", item.key, val)
+                        handleThemeColorChange("dark", item.key, val)
                       }
                     />
                   ))}
@@ -308,22 +307,25 @@ const Settings = () => {
 };
 
 // --- SUB-COMPONENT FOR COLOR INPUT ---
-const ColorInput = ({ label, value, onChange }) => (
-  <div className="flex items-center gap-4 p-4 rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)] transition-all shadow-sm hover:shadow-md">
-    <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 shadow-md border-2 border-[var(--color-border)] cursor-pointer group">
+const ColorInput = ({ label, value, onChange, compact }) => (
+  <div
+    className={`flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] bg-white dark:bg-slate-800 hover:border-[var(--color-primary)] transition-all ${compact ? "flex-col" : ""}`}
+  >
+    <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 shadow-sm border-2 border-[var(--color-border)] cursor-pointer group">
       <input
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] p-0 m-0 border-0 cursor-pointer"
       />
-      <div className="absolute inset-0 group-hover:ring-2 group-hover:ring-[var(--color-primary)] rounded-xl pointer-events-none"></div>
     </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-bold text-[var(--color-text-main)] mb-1">
+    <div className={`flex-1 min-w-0 ${compact ? "text-center" : ""}`}>
+      <p
+        className={`text-xs font-semibold text-[var(--color-text-main)] ${compact ? "mb-0" : "mb-1"}`}
+      >
         {label}
       </p>
-      <p className="text-xs text-[var(--color-text-muted)] font-mono uppercase">
+      <p className="text-[10px] text-[var(--color-text-muted)] font-mono">
         {value}
       </p>
     </div>

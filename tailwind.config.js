@@ -5,6 +5,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        // ===== BRAINBUZZ WEBSITE THEME =====
+        brand: {
+          blue: {
+            DEFAULT: "var(--color-brand-blue)",
+            dark: "var(--color-brand-blue-dark)",
+            light: "var(--color-brand-blue-light)",
+            lighter: "var(--color-brand-blue-lighter)",
+          },
+          green: {
+            DEFAULT: "var(--color-brand-green)",
+            hover: "var(--color-brand-green-hover)",
+            light: "var(--color-brand-green-light)",
+          },
+        },
+
+        // ===== ADMIN PANEL THEME =====
         // Dynamic Variable Mapping
         primary: {
           DEFAULT: "var(--color-primary)",

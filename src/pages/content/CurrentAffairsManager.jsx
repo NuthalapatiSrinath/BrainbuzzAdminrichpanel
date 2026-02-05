@@ -278,8 +278,8 @@ const CurrentAffairsManager = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex flex-col xl:flex-row justify-between items-center gap-4">
-        <div className="flex p-1 bg-slate-100 rounded-xl overflow-x-auto w-full xl:w-auto">
+      <div className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col xl:flex-row justify-between items-center gap-4">
+        <div className="flex p-1 bg-slate-100 dark:bg-gray-700 rounded-xl overflow-x-auto w-full xl:w-auto">
           {["content", "types"].map((tab) => (
             <button
               key={tab}
@@ -307,7 +307,7 @@ const CurrentAffairsManager = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center h-96">
             <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />

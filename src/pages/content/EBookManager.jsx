@@ -349,8 +349,8 @@ const EBookManager = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header & Tabs */}
-      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex flex-col xl:flex-row justify-between items-center gap-4">
-        <div className="flex p-1 bg-slate-100 rounded-xl overflow-x-auto w-full xl:w-auto">
+      <div className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col xl:flex-row justify-between items-center gap-4">
+        <div className="flex p-1 bg-slate-100 dark:bg-gray-700 rounded-xl overflow-x-auto w-full xl:w-auto">
           {["ebooks", "classification"].map((tab) => (
             <button
               key={tab}
@@ -386,58 +386,58 @@ const EBookManager = () => {
       {/* Stats Cards (Only on E-Books tab) */}
       {activeTab === "ebooks" && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in">
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">
+                <p className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase">
                   Total E-Books
                 </p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">
+                <p className="text-2xl font-bold text-slate-800 dark:text-gray-100 mt-1">
                   {ebooks.length}
                 </p>
               </div>
-              <div className="p-3 bg-indigo-50 rounded-xl">
-                <BookOpen className="w-6 h-6 text-indigo-600" />
+              <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
+                <BookOpen className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">
+                <p className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase">
                   Active
                 </p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
                   {ebooks.filter((e) => e.isActive).length}
                 </p>
               </div>
-              <div className="p-3 bg-green-50 rounded-xl">
-                <Eye className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl">
+                <Eye className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">
+                <p className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase">
                   Free
                 </p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
                   {ebooks.filter((e) => e.accessType === "FREE").length}
                 </p>
               </div>
-              <div className="p-3 bg-green-50 rounded-xl">
+              <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl">
                 <span className="text-2xl">🆓</span>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-slate-100 dark:border-gray-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">
+                <p className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase">
                   Paid
                 </p>
-                <p className="text-2xl font-bold text-amber-600 mt-1">
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
                   {ebooks.filter((e) => e.accessType === "PAID").length}
                 </p>
               </div>
@@ -450,7 +450,7 @@ const EBookManager = () => {
       )}
 
       {/* --- CONTENT AREA --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
         {/* TAB 1: E-BOOKS */}
         {activeTab === "ebooks" &&
           (ebookLoading ? (
@@ -484,15 +484,15 @@ const EBookManager = () => {
                 {filteredCategories.map((category) => (
                   <div
                     key={category._id}
-                    className="bg-white rounded-xl border border-slate-200 hover:shadow-md transition-shadow duration-300 overflow-hidden group"
+                    className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-300 overflow-hidden group"
                   >
                     {/* Category Header */}
-                    <div className="p-5 flex items-start justify-between bg-slate-50/50">
+                    <div className="p-5 flex items-start justify-between bg-slate-50/50 dark:bg-gray-700/50">
                       <div
                         className="flex items-center gap-4 cursor-pointer"
                         onClick={() => toggleExpand(category._id)}
                       >
-                        <div className="w-12 h-12 bg-white rounded-xl border border-slate-100 flex items-center justify-center shadow-sm overflow-hidden">
+                        <div className="w-12 h-12 bg-white dark:bg-gray-600 rounded-xl border border-slate-100 dark:border-gray-600 flex items-center justify-center shadow-sm overflow-hidden">
                           {category.thumbnailUrl ? (
                             <img
                               src={category.thumbnailUrl}
@@ -519,13 +519,13 @@ const EBookManager = () => {
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => openModal("category", null, category)}
-                          className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600"
+                          className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg text-slate-400 hover:text-indigo-600"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete("category", category._id)}
-                          className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-rose-600"
+                          className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg text-slate-400 hover:text-rose-600"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -553,7 +553,7 @@ const EBookManager = () => {
                           )?.map((sub) => (
                             <div
                               key={sub._id}
-                              className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 group/sub transition-colors"
+                              className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-600 group/sub transition-colors"
                             >
                               <div className="flex items-center gap-3">
                                 {sub.thumbnailUrl ? (
