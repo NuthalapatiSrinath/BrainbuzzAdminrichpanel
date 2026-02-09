@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Save,
@@ -55,7 +56,6 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     name: "",
     month: "",
     examDate: "",
-    accessType: "PAID",
     categoryIds: "",
     subCategoryIds: "",
     languageIds: "",
@@ -120,7 +120,6 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
       name: data.name || "",
       month: data.month || "",
       examDate: data.examDate ? data.examDate.split("T")[0] : "",
-      accessType: data.accessType || "PAID",
       categoryIds: data.categories?.[0]?._id || data.categories?.[0] || "",
       subCategoryIds:
         data.subCategories?.[0]?._id || data.subCategories?.[0] || "",
@@ -137,7 +136,6 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
       name: "",
       month: "",
       examDate: "",
-      accessType: "PAID",
       categoryIds: "",
       subCategoryIds: "",
       languageIds: "",
@@ -178,85 +176,136 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   };
 
   const updateSection = (index, field, value) => {
-    const newSections = [...formData.sections];
-    newSections[index] = { ...newSections[index], [field]: value };
-    setFormData({ ...formData, sections: newSections });
+    setFormData({
+      ...formData,
+      sections: formData.sections.map((section, idx) =>
+        idx === index ? { ...section, [field]: value } : section,
+      ),
+    });
   };
 
   const deleteSection = (index) => {
     if (!window.confirm("Delete this section and all its questions?")) return;
-    const newSections = formData.sections.filter((_, i) => i !== index);
-    setFormData({ ...formData, sections: newSections });
+    setFormData({
+      ...formData,
+      sections: formData.sections.filter((_, i) => i !== index),
+    });
   };
 
   // --- QUESTION MANAGEMENT ---
   const addQuestion = (sectionIndex) => {
-    const newSections = [...formData.sections];
-    newSections[sectionIndex].questions.push({
-      questionNumber: newSections[sectionIndex].questions.length + 1,
-      questionText: "",
-      questionType: "MCQ",
-      options: ["", "", "", ""],
-      correctOptionIndex: 0,
-      explanation: "",
-      marks: 1,
-      negativeMarks: 0,
+    setFormData({
+      ...formData,
+      sections: formData.sections.map((section, sIdx) => {
+        if (sIdx !== sectionIndex) return section;
+        return {
+          ...section,
+          questions: [
+            ...section.questions,
+            {
+              questionNumber: section.questions.length + 1,
+              questionText: "",
+              questionType: "MCQ",
+              options: ["", "", "", ""],
+              correctOptionIndex: 0,
+              explanation: "",
+              marks: 1,
+              negativeMarks: 0,
+            },
+          ],
+        };
+      }),
     });
-    setFormData({ ...formData, sections: newSections });
   };
 
   const updateQuestion = (sectionIndex, questionIndex, field, value) => {
-    const newSections = [...formData.sections];
-    newSections[sectionIndex].questions[questionIndex] = {
-      ...newSections[sectionIndex].questions[questionIndex],
-      [field]: value,
-    };
-    setFormData({ ...formData, sections: newSections });
+    setFormData({
+      ...formData,
+      sections: formData.sections.map((section, sIdx) => {
+        if (sIdx !== sectionIndex) return section;
+        return {
+          ...section,
+          questions: section.questions.map((question, qIdx) => {
+            if (qIdx !== questionIndex) return question;
+            return { ...question, [field]: value };
+          }),
+        };
+      }),
+    });
   };
 
   const updateOption = (sectionIndex, questionIndex, optionIndex, value) => {
-    const newSections = [...formData.sections];
-    newSections[sectionIndex].questions[questionIndex].options[optionIndex] =
-      value;
-    setFormData({ ...formData, sections: newSections });
+    setFormData({
+      ...formData,
+      sections: formData.sections.map((section, sIdx) => {
+        if (sIdx !== sectionIndex) return section;
+        return {
+          ...section,
+          questions: section.questions.map((question, qIdx) => {
+            if (qIdx !== questionIndex) return question;
+            return {
+              ...question,
+              options: question.options.map((opt, oIdx) =>
+                oIdx === optionIndex ? value : opt,
+              ),
+            };
+          }),
+        };
+      }),
+    });
   };
 
   const deleteQuestion = (sectionIndex, questionIndex) => {
-    const newSections = [...formData.sections];
-    newSections[sectionIndex].questions = newSections[
-      sectionIndex
-    ].questions.filter((_, i) => i !== questionIndex);
-    setFormData({ ...formData, sections: newSections });
+    setFormData({
+      ...formData,
+      sections: formData.sections.map((section, sIdx) => {
+        if (sIdx !== sectionIndex) return section;
+        return {
+          ...section,
+          questions: section.questions.filter(
+            (_, qIdx) => qIdx !== questionIndex,
+          ),
+        };
+      }),
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Wrap in object structure expected by backend if needed, or send directly
-    // Based on original code: { quiz: { ... } }
+
+    // Prepare data structure expected by backend
     const submitData = {
       quiz: {
         name: formData.name,
         month: formData.month,
         examDate: formData.examDate,
-        accessType: formData.accessType,
-        categoryIds: [formData.categoryIds],
-        subCategoryIds: [formData.subCategoryIds],
-        languageIds: [formData.languageIds],
+        categoryIds: formData.categoryIds ? [formData.categoryIds] : [],
+        subCategoryIds: formData.subCategoryIds
+          ? [formData.subCategoryIds]
+          : [],
+        languageIds: formData.languageIds ? [formData.languageIds] : [],
         freeMockLinks: formData.freeMockLinks,
         instructions: formData.instructions,
         sections: formData.sections,
         isActive: formData.isActive,
       },
     };
-    await onSubmit(submitData);
-    setIsSubmitting(false);
+
+    try {
+      await onSubmit(submitData);
+      // Form will be reset by parent component closing modal
+    } catch (error) {
+      toast.error("Failed to save quiz");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white shrink-0">
@@ -275,7 +324,7 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-100 px-6 gap-6 bg-slate-50/50 shrink-0">
+        <div className="flex border-b border-slate-100 bg-slate-50/50 shrink-0">
           {[
             { id: "basic", label: "Basic Info", icon: FileText },
             { id: "sections", label: "Sections & Questions", icon: Layers },
@@ -283,20 +332,23 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-3 text-sm font-bold capitalize border-b-2 transition-all flex items-center gap-2 ${
+              className={`flex-1 px-6 py-4 text-sm font-bold capitalize transition-all flex items-center justify-center gap-2 relative ${
                 activeTab === tab.id
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "text-indigo-600 bg-white"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
               }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
+              {activeTab === tab.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 rounded-t-full bg-indigo-600" />
+              )}
             </button>
           ))}
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8 bg-white custom-scrollbar">
           <form
             id="daily-quiz-form"
             onSubmit={handleSubmit}
@@ -322,7 +374,7 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                 </div>
 
                 {/* Grid 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
                     <CustomDropdown
                       label="Month"
@@ -333,6 +385,7 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                       options={MONTHS.map((m) => ({ label: m, value: m }))}
                       placeholder="Select Month"
                       icon={Calendar}
+                      searchable
                     />
                   </div>
 
@@ -348,21 +401,6 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                       className="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-indigo-500"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
-                      Access Type
-                    </label>
-                    <select
-                      name="accessType"
-                      value={formData.accessType}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 bg-white"
-                    >
-                      <option value="FREE">Free</option>
-                      <option value="PAID">Paid</option>
-                    </select>
-                  </div>
                 </div>
 
                 {/* Grid 2 - Classifications */}
@@ -375,6 +413,7 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                     icon={Layers}
                     placeholder="Select Category"
                     required
+                    searchable
                   />
                   <CustomDropdown
                     label="Sub Category"
@@ -385,6 +424,7 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                     placeholder="Select Sub Category"
                     disabled={!formData.categoryIds}
                     required
+                    searchable
                   />
                   <CustomDropdown
                     label="Language"
@@ -394,6 +434,7 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                     icon={FileText}
                     placeholder="Select Language"
                     required
+                    searchable
                   />
                 </div>
 
@@ -703,7 +744,8 @@ const DailyQuizModal = ({ isOpen, onClose, onSubmit, initialData }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

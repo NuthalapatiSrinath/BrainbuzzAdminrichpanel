@@ -68,6 +68,8 @@ const CurrentAffairsManager = () => {
         ).unwrap();
       } else {
         await dispatch(createCurrentAffair(data)).unwrap();
+        // Refresh to get populated category/subcategory/language data
+        await dispatch(fetchCurrentAffairs({})).unwrap();
       }
       toast.success("Saved successfully");
       setModalOpen(false);

@@ -68,20 +68,24 @@ const testSeriesSlice = createSlice({
       })
       .addCase(fetchTestSeries.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchTestSeries.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       .addCase(createTestSeries.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        if (action.payload) {
+          state.items.push(action.payload);
+        }
       })
       .addCase(updateTestSeries.fulfilled, (state, action) => {
-        const index = state.items.findIndex(
-          (i) => i._id === action.payload._id,
-        );
-        if (index !== -1) state.items[index] = action.payload;
+        if (action.payload) {
+          const index = state.items.findIndex(
+            (i) => i._id === action.payload._id,
+          );
+          if (index !== -1) state.items[index] = action.payload;
+        }
       })
       .addCase(deleteTestSeries.fulfilled, (state, action) => {
         state.items = state.items.filter((i) => i._id !== action.payload);

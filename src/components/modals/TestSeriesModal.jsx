@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -626,7 +627,7 @@ const TestSeriesModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -1091,7 +1092,8 @@ const TestSeriesModal = ({ isOpen, onClose, onSubmit, initialData }) => {
           </motion.div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

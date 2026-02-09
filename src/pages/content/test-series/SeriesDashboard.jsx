@@ -121,12 +121,15 @@ const SeriesDashboard = () => {
     try {
       const payload = new FormData();
       Object.keys(formData).forEach((key) => {
-        if (key.includes("Ids"))
-          payload.append(
-            key.replace("Ids", "").replace("Id", ""),
-            JSON.stringify(formData[key]),
-          );
-        else payload.append(key, formData[key]);
+        if (key === "languageIds") {
+          // Backend expects 'language' not 'languageIds'
+          payload.append("language", JSON.stringify(formData[key]));
+        } else if (key === "categoryIds" || key === "subCategoryIds") {
+          // Backend expects these exact field names
+          payload.append(key, JSON.stringify(formData[key]));
+        } else {
+          payload.append(key, formData[key]);
+        }
       });
 
       if (id) {

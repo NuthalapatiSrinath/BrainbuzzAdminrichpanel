@@ -11,6 +11,7 @@ import {
   FolderTree,
   Book,
   PenTool,
+  Download,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -170,8 +171,19 @@ const PYQManager = () => {
 
   const handleCreate = async (data) => {
     try {
-      if (modalType === "paper") await dispatch(createPYQ(data)).unwrap();
-      else if (modalType === "category")
+      if (modalType === "paper") {
+        // Transform field names for files
+        const transformedData = {
+          ...data,
+          thumbnailFile: data.thumbnail,
+          paperFile: data.paper,
+        };
+        delete transformedData.thumbnail;
+        delete transformedData.paper;
+        await dispatch(createPYQ(transformedData)).unwrap();
+        // Refresh the list to show populated category/subcategory
+        await dispatch(fetchPYQs({})).unwrap();
+      } else if (modalType === "category")
         await dispatch(
           createCategory({ ...data, contentType: PYQ_CONTENT_TYPE }),
         ).unwrap();
@@ -214,6 +226,45 @@ const PYQManager = () => {
     }
   };
 
+  // Handler for PYQ sub-modals (they handle API calls themselves)
+  const handlePYQSuccess = async (updatedData) => {
+    try {
+      // Refresh the PYQ list to show updated data
+      await dispatch(fetchPYQs()).unwrap();
+      toast.success("Updated successfully");
+      setModalOpen(false);
+      setSelectedItem(null);
+    } catch (err) {
+      toast.error("Failed to refresh data");
+    }
+  };
+
+  // --- DOWNLOAD HANDLER ---
+  const handleDownload = async (url, filename) => {
+    if (!url) return toast.error("No file available to download");
+    try {
+      const toastId = toast.loading("Downloading...");
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename || url.split("/").pop() || "question-paper.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      toast.dismiss(toastId);
+      toast.success("Download started");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.dismiss();
+      toast.error("Opening in new tab...");
+      window.open(url, "_blank");
+    }
+  };
+
   const handleDelete = async (type, id) => {
     if (!window.confirm("Are you sure?")) return;
     try {
@@ -230,6 +281,90 @@ const PYQManager = () => {
   };
 
   const getModalConfig = () => {
+    if (modalType === "paper") {
+      const categoryOptions = categories.map((c) => ({
+        label: c.name,
+        value: c._id,
+      }));
+      const examOptions = exams.map((e) => ({ label: e.name, value: e._id }));
+      const subjectOptions = subjects.map((s) => ({
+        label: s.name,
+        value: s._id,
+      }));
+
+      return [
+        {
+          name: "paperCategory",
+          label: "Paper Type",
+          type: "select",
+          options: [
+            { label: "EXAM", value: "EXAM" },
+            { label: "LATEST", value: "LATEST" },
+          ],
+          required: true,
+        },
+        {
+          name: "date",
+          label: "Admin Date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "examDate",
+          label: "Exam Date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          placeholder: "Enter detailed description...",
+        },
+        {
+          name: "categoryId",
+          label: "Category",
+          type: "select",
+          options: categoryOptions,
+          required: true,
+          clearDependents: ["subCategoryId"], // Clear subcategory when category changes
+        },
+        {
+          name: "subCategoryId",
+          label: "Sub Category",
+          type: "select",
+          options: [],
+          required: true,
+          placeholder: "Select Category First",
+        },
+        {
+          name: "examId",
+          label: "Exam",
+          type: "select",
+          options: examOptions,
+        },
+        {
+          name: "subjectId",
+          label: "Subject",
+          type: "select",
+          options: subjectOptions,
+        },
+        {
+          name: "thumbnail",
+          label: "Thumbnail",
+          type: "file",
+          accept: "image/*",
+          required: true,
+        },
+        {
+          name: "paper",
+          label: "Question Paper (PDF)",
+          type: "file",
+          accept: ".pdf",
+          required: true,
+        },
+      ];
+    }
     if (modalType === "category")
       return [
         {
@@ -363,15 +498,39 @@ const PYQManager = () => {
       className: "text-right",
       render: (row) => (
         <div className="flex justify-end gap-2">
+          {row.fileUrl ? (
+            <button
+              onClick={() =>
+                handleDownload(
+                  row.fileUrl,
+                  `${row.paperCategory}-${row.examYear || "paper"}.pdf`,
+                )
+              }
+              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+              title="Download Question Paper"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              disabled
+              className="p-2 text-gray-300 cursor-not-allowed rounded-lg"
+              title="No file available"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => openEditModal("paper", row)}
             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+            title="Edit Question Paper"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDelete("paper", row._id)}
             className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+            title="Delete Question Paper"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -645,12 +804,47 @@ const PYQManager = () => {
         )}
       </div>
 
-      {modalType === "paper" && (
+      {modalType === "paper" && selectedItem && (
         <PYQModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
-          onSubmit={selectedItem ? handleUpdate : handleCreate}
+          onSuccess={handlePYQSuccess}
           initialData={selectedItem}
+        />
+      )}
+      {modalType === "paper" && !selectedItem && (
+        <GenericModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleCreate}
+          initialData={null}
+          title="Add Question Paper"
+          fields={getModalConfig()}
+          onFieldChange={(formData, fields) => {
+            // Update subcategory options when category changes
+            if (formData.categoryId) {
+              const filteredSubs = subCategories
+                .filter((sub) => {
+                  const catId = sub.category?._id || sub.category;
+                  return catId === formData.categoryId;
+                })
+                .map((sub) => ({ label: sub.name, value: sub._id }));
+
+              return fields.map((field) => {
+                if (field.name === "subCategoryId") {
+                  return {
+                    ...field,
+                    options: filteredSubs,
+                    placeholder: filteredSubs.length
+                      ? "Select Sub Category"
+                      : "No subcategories available",
+                  };
+                }
+                return field;
+              });
+            }
+            return fields;
+          }}
         />
       )}
       {modalType !== "paper" && (

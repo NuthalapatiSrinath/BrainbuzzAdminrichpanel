@@ -9,6 +9,7 @@ import {
   Layers,
   ChevronRight,
   FolderTree,
+  Download,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -118,6 +119,32 @@ const PublicationManager = () => {
     });
     return filtered;
   }, [groupedSubCategories, search]);
+
+  // --- DOWNLOAD HANDLER ---
+  const handleDownload = async (url, filename) => {
+    if (!url) return toast.error("No file available to download");
+    try {
+      const toastId = toast.loading("Downloading...");
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename || url.split("/").pop() || "publication.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      toast.dismiss(toastId);
+      toast.success("Download started");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.dismiss();
+      toast.error("Opening in new tab...");
+      window.open(url, "_blank");
+    }
+  };
 
   // --- HANDLERS ---
   const openCreateModal = (type, parentId = null) => {
@@ -308,15 +335,34 @@ const PublicationManager = () => {
       className: "text-right",
       render: (row) => (
         <div className="flex justify-end gap-2">
+          {row.bookFileUrl ? (
+            <button
+              onClick={() => handleDownload(row.bookFileUrl, `${row.name}.pdf`)}
+              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+              title="Download Book"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              disabled
+              className="p-2 text-gray-300 cursor-not-allowed rounded-lg"
+              title="No book file available"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => openEditModal("publication", row)}
-            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"
+            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+            title="Edit Publication"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDelete("publication", row._id)}
-            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
+            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+            title="Delete Publication"
           >
             <Trash2 className="w-4 h-4" />
           </button>

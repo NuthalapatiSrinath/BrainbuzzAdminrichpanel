@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   X,
@@ -9,6 +10,7 @@ import {
   Save,
   Loader2,
   ExternalLink,
+  Download,
 } from "lucide-react";
 import { fetchCategories } from "../../store/slices/categorySlice";
 import { fetchSubCategories } from "../../store/slices/subCategorySlice";
@@ -254,6 +256,17 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
   const removeMaterial = (index) =>
     setStudyMaterials(studyMaterials.filter((_, i) => i !== index));
 
+  // --- Download Handler for Study Materials ---
+  const handleDownloadMaterial = (url, title) => {
+    // Extract filename from URL or use title
+    const filename = title ? `${title}.pdf` : url.split("/").pop() || "study-material.pdf";
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.target = "_blank";
+    link.click();
+  };
+
   // --- 6. Submission ---
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -335,7 +348,7 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
       <div className="bg-white rounded-2xl w-full max-w-7xl h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden m-4">
         {/* --- HEADER --- */}
@@ -858,15 +871,19 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
                                   </span>
                                 </div>
                                 <input
+                                  key={`tutor-photo-${index}`}
                                   type="file"
                                   accept="image/*"
-                                  onChange={(e) =>
-                                    updateTutor(
-                                      index,
-                                      "photo",
-                                      e.target.files[0],
-                                    )
-                                  }
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      updateTutor(
+                                        index,
+                                        "photo",
+                                        e.target.files[0],
+                                      );
+                                    }
+                                    e.target.value = "";
+                                  }}
                                   className="hidden"
                                 />
                               </label>
@@ -1019,15 +1036,19 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
                                   </span>
                                 </div>
                                 <input
+                                  key={`class-video-${index}`}
                                   type="file"
                                   accept="video/*"
-                                  onChange={(e) =>
-                                    updateClass(
-                                      index,
-                                      "video",
-                                      e.target.files[0],
-                                    )
-                                  }
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      updateClass(
+                                        index,
+                                        "video",
+                                        e.target.files[0],
+                                      );
+                                    }
+                                    e.target.value = "";
+                                  }}
                                   className="hidden"
                                 />
                               </label>
@@ -1078,15 +1099,19 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
                                   </span>
                                 </div>
                                 <input
+                                  key={`class-thumbnail-${index}`}
                                   type="file"
                                   accept="image/*"
-                                  onChange={(e) =>
-                                    updateClass(
-                                      index,
-                                      "thumbnail",
-                                      e.target.files[0],
-                                    )
-                                  }
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      updateClass(
+                                        index,
+                                        "thumbnail",
+                                        e.target.files[0],
+                                      );
+                                    }
+                                    e.target.value = "";
+                                  }}
                                   className="hidden"
                                 />
                               </label>
@@ -1123,15 +1148,19 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
                                   </span>
                                 </div>
                                 <input
+                                  key={`class-lecture-${index}`}
                                   type="file"
                                   accept="image/*"
-                                  onChange={(e) =>
-                                    updateClass(
-                                      index,
-                                      "lecturePhoto",
-                                      e.target.files[0],
-                                    )
-                                  }
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      updateClass(
+                                        index,
+                                        "lecturePhoto",
+                                        e.target.files[0],
+                                      );
+                                    }
+                                    e.target.value = "";
+                                  }}
                                   className="hidden"
                                 />
                               </label>
@@ -1266,15 +1295,19 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
                                   </span>
                                 </div>
                                 <input
+                                  key={`material-file-${index}`}
                                   type="file"
                                   accept=".pdf,.doc,.docx"
-                                  onChange={(e) =>
-                                    updateMaterial(
-                                      index,
-                                      "file",
-                                      e.target.files[0],
-                                    )
-                                  }
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      updateMaterial(
+                                        index,
+                                        "file",
+                                        e.target.files[0],
+                                      );
+                                    }
+                                    e.target.value = "";
+                                  }}
                                   className="hidden"
                                 />
                               </label>
@@ -1284,30 +1317,21 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
                               <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
                                 {typeof mat.filePreview === "string" &&
                                 mat.filePreview.startsWith("http") ? (
-                                  <a
-                                    href={mat.filePreview}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 text-blue-600 hover:text-blue-700 group"
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleDownloadMaterial(
+                                        mat.filePreview,
+                                        mat.title,
+                                      )
+                                    }
+                                    className="flex items-center gap-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
                                   >
-                                    <div className="p-2 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
-                                      <ExternalLink
-                                        size={18}
-                                        className="text-blue-600"
-                                      />
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="text-xs font-medium text-slate-500 mb-1">
-                                        File URL:
-                                      </div>
-                                      <div className="text-sm font-bold group-hover:underline break-all">
-                                        {mat.filePreview}
-                                      </div>
-                                      <div className="text-xs text-blue-500 mt-1">
-                                        Click to open in new tab
-                                      </div>
-                                    </div>
-                                  </a>
+                                    <Download className="w-5 h-5" />
+                                    <span className="font-medium">
+                                      Download Study Material
+                                    </span>
+                                  </button>
                                 ) : (
                                   <div className="flex items-center gap-3">
                                     <div className="p-2 bg-white rounded-lg shadow-sm">
@@ -1364,7 +1388,8 @@ const CourseModal = ({ isOpen, onClose, course = null, onSuccess }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

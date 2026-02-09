@@ -24,7 +24,7 @@ import DataTable from "../../../components/DataTable";
 const TestSeriesList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { items: seriesList, loading } = useSelector(
+  const { items: seriesList = [], loading } = useSelector(
     (state) => state.testSeries,
   );
   const [search, setSearch] = useState("");
@@ -46,9 +46,11 @@ const TestSeriesList = () => {
     }
   };
 
-  const filteredData = seriesList.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredData = Array.isArray(seriesList) 
+    ? seriesList.filter((s) =>
+        s.name.toLowerCase().includes(search.toLowerCase()),
+      )
+    : [];
 
   const columns = [
     {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Save,
@@ -12,7 +13,6 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import CustomDropdown from "../common/CustomDropdown";
-import MultiSelect from "../common/MultiSelect";
 import DatePicker from "../common/DatePicker";
 
 // Services
@@ -47,7 +47,7 @@ const CurrentAffairsModal = ({
     currentAffairsCategoryId: "",
     categoryId: "",
     subCategoryId: "",
-    languageIds: [], // Changed to array for multiple selection
+    languageId: "", // Changed to single value to match backend
     isActive: true,
   });
 
@@ -67,11 +67,12 @@ const CurrentAffairsModal = ({
       ); // Map types from props
 
       if (initialData) {
-        // Extract language IDs from languages array
-        const langIds =
-          initialData.languages?.map((lang) =>
-            typeof lang === "object" ? lang._id : lang,
-          ) || [];
+        // Get first language ID from languages array
+        const langId = initialData.languages?.[0]
+          ? typeof initialData.languages[0] === "object"
+            ? initialData.languages[0]._id
+            : initialData.languages[0]
+          : "";
 
         setFormData({
           name: initialData.name || "",
@@ -90,7 +91,7 @@ const CurrentAffairsModal = ({
             initialData.subCategories?.[0]?._id ||
             initialData.subCategories?.[0] ||
             "",
-          languageIds: langIds,
+          languageId: langId,
           isActive: initialData.isActive ?? true,
         });
         setPreview(initialData.thumbnailUrl);
@@ -111,7 +112,7 @@ const CurrentAffairsModal = ({
       currentAffairsCategoryId: "",
       categoryId: "",
       subCategoryId: "",
-      languageIds: [],
+      languageId: "",
       isActive: true,
     });
     setFile(null);
@@ -182,8 +183,8 @@ const CurrentAffairsModal = ({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+  return createPortal(
+    <div className="fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -200,20 +201,23 @@ const CurrentAffairsModal = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-100 px-6 gap-6 bg-slate-50/50">
+        <div className="flex border-b border-slate-100 bg-slate-50/50 shrink-0">
           {["basic", "content", "classification"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-3 text-sm font-bold capitalize border-b-2 transition-colors ${activeTab === tab ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}
+              className={`flex-1 px-6 py-4 text-sm font-bold capitalize transition-all flex items-center justify-center gap-2 relative ${activeTab === tab ? "text-indigo-600 bg-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
             >
               {tab}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 rounded-t-full bg-indigo-600" />
+              )}
             </button>
           ))}
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">
           <form id="ca-form" onSubmit={handleSubmit} className="space-y-6">
             {activeTab === "basic" && (
               <div className="grid gap-5">
@@ -229,14 +233,15 @@ const CurrentAffairsModal = ({
                     placeholder="Select Type (e.g. Sports)"
                     required
                   />
-                  <MultiSelect
-                    label="Languages"
+                  <CustomDropdown
+                    label="Language"
                     options={languages}
-                    value={formData.languageIds}
-                    onChange={(v) => handleDropdown("languageIds", v)}
+                    value={formData.languageId}
+                    onChange={(v) => handleDropdown("languageId", v)}
                     icon={Type}
-                    placeholder="Select one or more languages"
+                    placeholder="Select language"
                     required
+                    searchable
                   />
                 </div>
 
@@ -279,15 +284,35 @@ const CurrentAffairsModal = ({
                     required
                   />
                   {isMonthly && (
-                    <DatePicker
-                      label="Month"
-                      value={formData.month}
-                      onChange={(val) =>
-                        setFormData((p) => ({ ...p, month: val }))
-                      }
-                      type="month"
-                      required
-                    />
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
+                        Month <span className="text-red-500">*</span>
+                      </label>
+                      <CustomDropdown
+                        options={[
+                          { label: "January", value: "January" },
+                          { label: "February", value: "February" },
+                          { label: "March", value: "March" },
+                          { label: "April", value: "April" },
+                          { label: "May", value: "May" },
+                          { label: "June", value: "June" },
+                          { label: "July", value: "July" },
+                          { label: "August", value: "August" },
+                          { label: "September", value: "September" },
+                          { label: "October", value: "October" },
+                          { label: "November", value: "November" },
+                          { label: "December", value: "December" },
+                        ]}
+                        value={formData.month}
+                        onChange={(val) =>
+                          setFormData((p) => ({ ...p, month: val }))
+                        }
+                        icon={Calendar}
+                        placeholder="Select month"
+                        required
+                        searchable
+                      />
+                    </div>
                   )}
                 </div>
               </div>
@@ -387,7 +412,8 @@ const CurrentAffairsModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

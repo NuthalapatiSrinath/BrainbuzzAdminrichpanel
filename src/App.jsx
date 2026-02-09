@@ -1,8 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import AppRoutes from "./routes/AppRoutes";
+import { BookOpen } from "lucide-react";
+
+// --- Custom Loading Screen ---
+const LoadingScreen = () => (
+  <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-[9999]">
+    <div className="relative">
+      <div className="w-24 h-24 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div className="absolute inset-0 flex items-center justify-center animate-pulse">
+        <BookOpen className="w-10 h-10 text-indigo-600" strokeWidth={2} />
+      </div>
+    </div>
+    <p className="mt-4 text-slate-500 font-medium text-sm tracking-widest uppercase animate-pulse">
+      Loading Brain Buzz Admin...
+    </p>
+  </div>
+);
 
 // Define themes here strictly for initialization to match Settings.jsx
 const THEMES_CONFIG = {
@@ -40,6 +56,13 @@ const THEMES_CONFIG = {
 
 function App() {
   const { mode } = useSelector((state) => state.theme);
+  const [appReady, setAppReady] = useState(false);
+
+  // 0. Initial app boot (makes UI feel smoother)
+  useEffect(() => {
+    const timer = setTimeout(() => setAppReady(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 1. Apply Dark/Light Mode
   useEffect(() => {
@@ -63,19 +86,51 @@ function App() {
     }
   }, []);
 
+  if (!appReady) return <LoadingScreen />;
+
   return (
     <BrowserRouter>
+      {/* --- ENHANCED TOASTER SETTINGS --- */}
       <Toaster
         position="top-right"
+        reverseOrder={false}
+        gutter={8}
         toastOptions={{
+          duration: 3000,
           style: {
             background: mode === "dark" ? "#1e293b" : "#fff",
-            color: mode === "dark" ? "#fff" : "#333",
-            border: "1px solid var(--color-border)",
+            color: mode === "dark" ? "#fff" : "#0f172a",
+            padding: "16px",
+            borderRadius: "12px",
+            fontSize: "14px",
+            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
+            border: mode === "dark" ? "1px solid #334155" : "1px solid #e2e8f0",
+          },
+          success: {
+            iconTheme: { primary: "#10B981", secondary: "#fff" },
+            style: {
+              borderLeft: "4px solid #10B981",
+              background: mode === "dark" ? "#1e293b" : "#f0fdf4",
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: { primary: "#EF4444", secondary: "#fff" },
+            style: {
+              borderLeft: "4px solid #EF4444",
+              background: mode === "dark" ? "#1e293b" : "#fef2f2",
+            },
+          },
+          loading: {
+            style: {
+              borderLeft: "4px solid #3b82f6",
+            },
           },
         }}
       />
-      <AppRoutes />
+      <Suspense fallback={<LoadingScreen />}>
+        <AppRoutes />
+      </Suspense>
     </BrowserRouter>
   );
 }

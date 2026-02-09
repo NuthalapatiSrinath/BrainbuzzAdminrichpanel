@@ -225,7 +225,7 @@ const DatePicker = ({
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={clearDate}
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center justify-center"
           >
             <X size={18} />
           </motion.button>

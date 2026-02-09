@@ -133,9 +133,11 @@ const LiveClassManager = () => {
 
   const handleCreate = async (data) => {
     try {
-      if (modalType === "liveClass")
+      if (modalType === "liveClass") {
         await dispatch(createLiveClass(data)).unwrap();
-      else if (modalType === "category")
+        // Refresh to get populated category/subcategory data
+        await dispatch(fetchLiveClasses({})).unwrap();
+      } else if (modalType === "category")
         await dispatch(
           createCategory({ ...data, contentType: LIVE_CLASS_CONTENT_TYPE }),
         ).unwrap();

@@ -93,6 +93,64 @@ export const pyqService = {
   },
 
   // ==========================================
+  // DEDICATED UPDATE METHODS FOR MODALS
+  // ==========================================
+
+  /**
+   * Update Basic Info (dedicated method for BasicInfoModal)
+   * Fields: paperCategory, date, examDate, description
+   */
+  updateBasicInfo: async (id, data) => {
+    const payload = {
+      paperCategory: data.paperCategory,
+      date: data.date,
+      examDate: data.examDate,
+      description: data.description,
+    };
+    const response = await api.put(`${BASE_URL}/${id}`, payload);
+    return response.data;
+  },
+
+  /**
+   * Update Classification (dedicated method for ClassificationModal)
+   * Fields: categoryId, subCategoryId, examId, subjectId
+   */
+  updateClassification: async (id, data) => {
+    const payload = {
+      categoryId: data.categoryId,
+      subCategoryId: data.subCategoryId,
+      examId: data.examId,
+      subjectId: data.subjectId,
+    };
+    const response = await api.put(`${BASE_URL}/${id}`, payload);
+    return response.data;
+  },
+
+  /**
+   * Update Thumbnail (dedicated method for FilesModal)
+   */
+  updateThumbnail: async (id, thumbnailFile) => {
+    const formData = new FormData();
+    formData.append("thumbnail", thumbnailFile);
+    const response = await api.put(`${BASE_URL}/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  /**
+   * Update Paper (dedicated method for FilesModal)
+   */
+  updatePaper: async (id, paperFile) => {
+    const formData = new FormData();
+    formData.append("paper", paperFile);
+    const response = await api.put(`${BASE_URL}/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  // ==========================================
   // FILTERS (Based on app.js filter routes)
   // ==========================================
 

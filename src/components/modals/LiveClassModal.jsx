@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Save,
@@ -155,8 +156,8 @@ const LiveClassModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white">
@@ -175,20 +176,23 @@ const LiveClassModal = ({ isOpen, onClose, onSubmit, initialData }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-100 px-6 gap-6 bg-slate-50/50">
+        <div className="flex border-b border-slate-100 bg-slate-50/50 shrink-0">
           {["basic", "details", "classification"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-3 text-sm font-bold capitalize border-b-2 transition-all ${activeTab === tab ? "border-rose-600 text-rose-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}
+              className={`flex-1 px-6 py-4 text-sm font-bold capitalize transition-all flex items-center justify-center gap-2 relative ${activeTab === tab ? "text-rose-600 bg-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
             >
               {tab}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 rounded-t-full bg-rose-600" />
+              )}
             </button>
           ))}
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8 bg-white custom-scrollbar">
           <form id="live-form" onSubmit={handleSubmit} className="space-y-6">
             {activeTab === "basic" && (
               <div className="grid gap-6">
@@ -384,7 +388,8 @@ const LiveClassModal = ({ isOpen, onClose, onSubmit, initialData }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

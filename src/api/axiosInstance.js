@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const api = axios.create({
   baseURL: "https://brain-buzz-backend.onrender.com/api", // Make sure this matches your backend URL
@@ -109,23 +110,52 @@ api.interceptors.response.use(
       "color: #ef4444; font-weight: bold;",
     );
 
+    let errorMessage = "Something went wrong. Please try again.";
+
     if (error.response) {
       // ✅ CHECK FOR 401 UNAUTHORIZED HERE
       // If the token is missing or invalid, the server typically returns 401.
       if (error.response.status === 401) {
         console.warn("⚠️ Unauthorized! Redirecting to Login...");
+        errorMessage = "Session expired. Please login again.";
+        toast.error(errorMessage, { duration: 3000 });
         handleSessionExpiry();
+      } else {
+        // Extract error message from backend response
+        errorMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          error.response.data?.errors?.[0]?.msg ||
+          `Error ${error.response.status}: ${error.response.statusText}`;
+
+        // Show toast for all other errors (except 401 which we handled above)
+        toast.error(errorMessage, {
+          duration: 4000,
+          style: {
+            background: "#fee2e2",
+            color: "#991b1b",
+            border: "1px solid #fca5a5",
+            padding: "16px",
+            borderRadius: "8px",
+          },
+        });
       }
 
       console.log(
         "%cError Message:",
         "color: #ef4444; font-weight: bold;",
-        error.response.data?.message || error.response.data,
+        errorMessage,
       );
       console.log("Full Error Response:", error.response);
     } else if (error.request) {
+      // Network error - no response received
+      errorMessage = "Network error. Please check your internet connection.";
+      toast.error(errorMessage, { duration: 4000 });
       console.log("%cNo Response Received:", "color: #f97316;", error.request);
     } else {
+      // Something else happened
+      errorMessage = error.message || "An unexpected error occurred.";
+      toast.error(errorMessage, { duration: 4000 });
       console.log("Error Config:", error.message);
     }
 

@@ -15,6 +15,8 @@ import {
   Calendar,
   CheckCircle,
   XCircle,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -30,7 +32,6 @@ const DailyQuizManager = () => {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
-  const [filterAccessType, setFilterAccessType] = useState("");
   const [filterIsActive, setFilterIsActive] = useState("");
 
   const MONTHS = [
@@ -90,7 +91,8 @@ const DailyQuizManager = () => {
         toast.success("Quiz created successfully");
       }
       setIsModalOpen(false);
-      loadQuizzes();
+      // Refresh to get populated category/subcategory/language data
+      await dispatch(fetchDailyQuizzes()).unwrap();
     } catch (error) {
       toast.error(error.message || "Operation failed");
     }
@@ -99,7 +101,6 @@ const DailyQuizManager = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setFilterMonth("");
-    setFilterAccessType("");
     setFilterIsActive("");
   };
 
@@ -108,18 +109,16 @@ const DailyQuizManager = () => {
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesMonth = !filterMonth || quiz.month === filterMonth;
-    const matchesAccessType =
-      !filterAccessType || quiz.accessType === filterAccessType;
     const matchesActive =
       filterIsActive === "" || quiz.isActive === (filterIsActive === "true");
 
-    return matchesSearch && matchesMonth && matchesAccessType && matchesActive;
+    return matchesSearch && matchesMonth && matchesActive;
   });
 
   const columns = [
     {
-      key: "name",
-      label: "Quiz Name",
+      accessor: "name",
+      header: "Quiz Name",
       render: (row) => (
         <div className="flex items-center gap-2">
           <span className="font-bold text-slate-800">{row.name}</span>
@@ -132,8 +131,8 @@ const DailyQuizManager = () => {
       ),
     },
     {
-      key: "month",
-      label: "Month",
+      accessor: "month",
+      header: "Month",
       render: (row) => (
         <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold">
           {row.month}
@@ -141,8 +140,8 @@ const DailyQuizManager = () => {
       ),
     },
     {
-      key: "examDate",
-      label: "Exam Date",
+      accessor: "examDate",
+      header: "Exam Date",
       render: (row) =>
         row.examDate ? (
           <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -154,8 +153,8 @@ const DailyQuizManager = () => {
         ),
     },
     {
-      key: "categories",
-      label: "Category",
+      accessor: "categories",
+      header: "Category",
       render: (row) => (
         <span className="text-sm text-slate-600">
           {row.categories?.[0]?.name || "N/A"}
@@ -163,8 +162,8 @@ const DailyQuizManager = () => {
       ),
     },
     {
-      key: "languages",
-      label: "Language",
+      accessor: "languages",
+      header: "Language",
       render: (row) => (
         <span className="text-sm text-slate-600">
           {row.languages?.[0]?.name || "N/A"}
@@ -172,8 +171,8 @@ const DailyQuizManager = () => {
       ),
     },
     {
-      key: "totalQuestions",
-      label: "Questions",
+      accessor: "totalQuestions",
+      header: "Questions",
       render: (row) => (
         <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm font-bold">
           {row.totalQuestions || 0}
@@ -181,8 +180,8 @@ const DailyQuizManager = () => {
       ),
     },
     {
-      key: "totalMarks",
-      label: "Total Marks",
+      accessor: "totalMarks",
+      header: "Total Marks",
       render: (row) => (
         <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-bold">
           {row.totalMarks || 0}
@@ -190,29 +189,37 @@ const DailyQuizManager = () => {
       ),
     },
     {
-      key: "accessType",
-      label: "Access",
-      render: (row) => (
-        <span
-          className={`px-3 py-1 rounded-lg text-xs font-bold ${
-            row.accessType === "FREE"
-              ? "bg-green-50 text-green-700"
-              : "bg-amber-50 text-amber-700"
-          }`}
-        >
-          {row.accessType}
-        </span>
-      ),
-    },
-    {
-      key: "isActive",
-      label: "Status",
+      accessor: "isActive",
+      header: "Status",
       render: (row) =>
         row.isActive ? (
           <CheckCircle className="w-5 h-5 text-green-500" />
         ) : (
           <XCircle className="w-5 h-5 text-red-500" />
         ),
+    },
+    {
+      header: "Actions",
+      accessor: "_id",
+      className: "text-right",
+      render: (row) => (
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => handleEdit(row)}
+            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+            title="Edit Quiz"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(row._id)}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+            title="Delete Quiz"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -266,17 +273,6 @@ const DailyQuizManager = () => {
             ))}
           </select>
 
-          {/* Access Type Filter */}
-          <select
-            value={filterAccessType}
-            onChange={(e) => setFilterAccessType(e.target.value)}
-            className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          >
-            <option value="">All Access Types</option>
-            <option value="FREE">Free</option>
-            <option value="PAID">Paid</option>
-          </select>
-
           {/* Active Filter */}
           <select
             value={filterIsActive}
@@ -289,7 +285,7 @@ const DailyQuizManager = () => {
           </select>
         </div>
 
-        {(searchTerm || filterMonth || filterAccessType || filterIsActive) && (
+        {(searchTerm || filterMonth || filterIsActive) && (
           <button
             onClick={clearFilters}
             className="mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-bold"
@@ -300,7 +296,7 @@ const DailyQuizManager = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">
           <p className="text-blue-600 text-sm font-bold">Total Quizzes</p>
           <p className="text-3xl font-bold text-blue-700 mt-1">
@@ -311,18 +307,6 @@ const DailyQuizManager = () => {
           <p className="text-green-600 text-sm font-bold">Active Quizzes</p>
           <p className="text-3xl font-bold text-green-700 mt-1">
             {(quizzes || []).filter((q) => q.isActive).length}
-          </p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200">
-          <p className="text-purple-600 text-sm font-bold">Free Quizzes</p>
-          <p className="text-3xl font-bold text-purple-700 mt-1">
-            {(quizzes || []).filter((q) => q.accessType === "FREE").length}
-          </p>
-        </div>
-        <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-5 rounded-xl border border-amber-200">
-          <p className="text-amber-600 text-sm font-bold">Paid Quizzes</p>
-          <p className="text-3xl font-bold text-amber-700 mt-1">
-            {(quizzes || []).filter((q) => q.accessType === "PAID").length}
           </p>
         </div>
       </div>
@@ -336,12 +320,7 @@ const DailyQuizManager = () => {
         ) : error ? (
           <div className="text-center py-12 text-red-600">{error}</div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={filteredQuizzes}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <DataTable columns={columns} data={filteredQuizzes} />
         )}
       </div>
 

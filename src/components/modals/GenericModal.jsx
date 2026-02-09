@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Save,
@@ -19,10 +20,12 @@ const GenericModal = ({
   title,
   initialData,
   fields,
+  onFieldChange, // Callback when a field changes
 }) => {
   const [formData, setFormData] = useState({});
   const [files, setFiles] = useState({});
   const [previews, setPreviews] = useState({});
+  const [dynamicFields, setDynamicFields] = useState(fields);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,11 +51,34 @@ const GenericModal = ({
       setFormData(initial);
       setPreviews(initialPreviews);
       setFiles({});
+      setDynamicFields(fields);
     }
   }, [isOpen, initialData, fields]);
 
+  // Update dependent fields when formData changes
+  useEffect(() => {
+    if (onFieldChange) {
+      const updatedFields = onFieldChange(formData, fields);
+      if (updatedFields) {
+        setDynamicFields(updatedFields);
+      }
+    }
+  }, [formData, fields, onFieldChange]);
+
   const handleChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      // Clear dependent fields when parent field changes
+      const field = dynamicFields.find((f) => f.name === name);
+      if (field && field.clearDependents) {
+        field.clearDependents.forEach((dep) => {
+          updated[dep] = "";
+        });
+      }
+
+      return updated;
+    });
   };
 
   const handleFileChange = (name, file) => {
@@ -71,7 +97,7 @@ const GenericModal = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -170,7 +196,7 @@ const GenericModal = ({
         <div className="relative flex-1 overflow-y-auto p-8 custom-scrollbar bg-white dark:bg-slate-800 min-h-[400px]">
           <form id="generic-form" onSubmit={handleSubmit} className="space-y-7">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {fields.map((field, idx) => {
+              {dynamicFields.map((field, idx) => {
                 const Icon = field.icon || Type;
                 const isFullWidth =
                   field.fullWidth ||
@@ -350,7 +376,8 @@ const GenericModal = ({
           </motion.button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 };
 

@@ -1,5 +1,17 @@
 import axiosInstance from "./axiosInstance";
 
+// Helper: Convert URL to Blob for re-uploading existing files (maintains index alignment)
+const urlToBlob = async (url) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
+    console.error("Failed to fetch resource from URL:", url, error);
+    return null;
+  }
+};
+
 const courseService = {
   // ==========================================
   // 1. CORE READ OPERATIONS
@@ -185,20 +197,129 @@ const courseService = {
       formData.append("thumbnail", courseData.thumbnail);
     }
 
+    // CRITICAL: Tutor images MUST be sent at correct array positions
+    // Backend matches by index: tutorImages[0] -> tutors[0], tutorImages[1] -> tutors[1]
     if (courseData.tutors) {
-      courseData.tutors.forEach((t) => {
-        if (t.photo instanceof File) formData.append("tutorImages", t.photo);
-      });
+      for (const tutor of courseData.tutors) {
+        if (tutor.photo instanceof File) {
+          // New photo uploaded
+          formData.append("tutorImages", tutor.photo);
+        } else if (tutor.photoUrl) {
+          // Re-send existing photo to maintain index alignment
+          try {
+            const blob = await urlToBlob(tutor.photoUrl);
+            if (blob) {
+              formData.append("tutorImages", blob, "existing.jpg");
+            } else {
+              // If fetch fails, send a tiny placeholder to maintain position
+              formData.append(
+                "tutorImages",
+                new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+                "placeholder.jpg",
+              );
+            }
+          } catch (error) {
+            console.error("Failed to re-upload existing tutor photo:", error);
+            // Send placeholder to maintain index
+            formData.append(
+              "tutorImages",
+              new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+              "placeholder.jpg",
+            );
+          }
+        } else {
+          // No photo at all, send minimal placeholder
+          formData.append(
+            "tutorImages",
+            new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+            "no-photo.jpg",
+          );
+        }
+      }
     }
 
+    // CRITICAL: Class media files MUST be sent at correct array positions
+    // Backend matches by index: classThumbnails[0] -> classes[0], etc.
     if (courseData.classes) {
-      courseData.classes.forEach((c) => {
-        if (c.thumbnail instanceof File)
-          formData.append("classThumbnails", c.thumbnail);
-        if (c.lecturePhoto instanceof File)
-          formData.append("classLecturePics", c.lecturePhoto);
-        if (c.video instanceof File) formData.append("classVideos", c.video);
-      });
+      for (const cls of courseData.classes) {
+        // Thumbnail
+        if (cls.thumbnail instanceof File) {
+          formData.append("classThumbnails", cls.thumbnail);
+        } else if (cls.thumbnailUrl) {
+          try {
+            const blob = await urlToBlob(cls.thumbnailUrl);
+            formData.append(
+              "classThumbnails",
+              blob || new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+              "existing-thumb.jpg",
+            );
+          } catch (error) {
+            formData.append(
+              "classThumbnails",
+              new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+              "placeholder-thumb.jpg",
+            );
+          }
+        } else {
+          formData.append(
+            "classThumbnails",
+            new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+            "no-thumb.jpg",
+          );
+        }
+
+        // Lecture Photo
+        if (cls.lecturePhoto instanceof File) {
+          formData.append("classLecturePics", cls.lecturePhoto);
+        } else if (cls.lecturePhotoUrl) {
+          try {
+            const blob = await urlToBlob(cls.lecturePhotoUrl);
+            formData.append(
+              "classLecturePics",
+              blob || new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+              "existing-lecture.jpg",
+            );
+          } catch (error) {
+            formData.append(
+              "classLecturePics",
+              new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+              "placeholder-lecture.jpg",
+            );
+          }
+        } else {
+          formData.append(
+            "classLecturePics",
+            new Blob([new Uint8Array(1)], { type: "image/jpeg" }),
+            "no-lecture.jpg",
+          );
+        }
+
+        // Video
+        if (cls.video instanceof File) {
+          formData.append("classVideos", cls.video);
+        } else if (cls.videoUrl) {
+          try {
+            const blob = await urlToBlob(cls.videoUrl);
+            formData.append(
+              "classVideos",
+              blob || new Blob([new Uint8Array(1)], { type: "video/mp4" }),
+              "existing-video.mp4",
+            );
+          } catch (error) {
+            formData.append(
+              "classVideos",
+              new Blob([new Uint8Array(1)], { type: "video/mp4" }),
+              "placeholder-video.mp4",
+            );
+          }
+        } else {
+          formData.append(
+            "classVideos",
+            new Blob([new Uint8Array(1)], { type: "video/mp4" }),
+            "no-video.mp4",
+          );
+        }
+      }
     }
 
     if (courseData.studyMaterials) {
